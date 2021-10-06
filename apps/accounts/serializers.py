@@ -1,9 +1,22 @@
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import User, Permission
+from django.contrib.auth.models import User, Permission, Group
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
 
-from apps.accounts.models import Profile
+from apps.accounts.models import Profile, Role
+
+
+class RoleMiniSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = []
+
+    def to_representation(self, instance):
+        role = Role.objects.get(id=instance.id)
+        return {
+            'id': role.id,
+            'role_name': role.role_name
+        }
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -13,9 +26,16 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id', 'first_name', 'last_name',
-            'email', 'username', 'password'
+            'email', 'username', 'password', 'groups'
         ]
         validate_password = make_password
+
+    extra_kwargs = {'groups': {'required': False}}
+
+    def to_representation(self, instance):
+        data = super(UserSerializer, self).to_representation(instance)
+        data['groups'] = RoleMiniSerializer(instance.groups, many=True).data
+        return data
 
 
 class ContentTypeSerializer(serializers.ModelSerializer):
