@@ -3,10 +3,10 @@ from django.shortcuts import render
 from rest_framework import generics
 
 # Create your views here.
-from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
+from rest_framework.permissions import IsAuthenticated
 
 from apps.accounts.models import Restaurant, Profile, Role
-from apps.accounts.serializers import UserSerializer, PermissionSerializer, ProfileSerializer, RoleMiniSerializer, \
+from apps.accounts.serializers import UserSerializer, PermissionSerializer, ProfileSerializer, \
     RoleSerializer
 from restaurant.permissions import DjangoModelPermissionsWithRead
 
@@ -103,3 +103,11 @@ class RetrieveUpdateDestroyRoleAPIView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return Role.objects.filter(restaurant=self.request.user.profile.restaurant)
+
+
+class ListPermissionAPIView(generics.ListAPIView):
+    permission_classes = [DjangoModelPermissionsWithRead]
+    serializer_class = PermissionSerializer
+
+    def get_queryset(self):
+        return Permission.objects.all()
