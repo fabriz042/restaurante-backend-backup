@@ -1,10 +1,10 @@
 from django.contrib import admin
 
 # Register your models here.
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User, Group, Permission
 
 from apps.accounts.models import Restaurant, Profile, Settings, Role
-from django.contrib.auth.admin import UserAdmin as AuthUserAdmin
+from django.contrib.auth.admin import UserAdmin as AuthUserAdmin, GroupAdmin
 
 
 class ProfileTabularInline(admin.TabularInline):
@@ -54,11 +54,23 @@ class RestaurantAdmin(admin.ModelAdmin):
 
 class UserAdmin(AuthUserAdmin):
     inlines = [ProfileStackedInline]
+    list_display = [
+        'username',
+        'email',
+        'first_name',
+        'last_name',
+        'is_active'
+    ]
 
 
-class RoleAdmin(admin.ModelAdmin):
+class PermissionStackedInLine(admin.StackedInline):
+    model = Permission
+
+
+class RoleAdmin(GroupAdmin):
     """PartyCompanyAdmin Class"""
     inlines = [
+    #    PermissionStackedInLine
     ]
     list_display = [
         'id',
@@ -78,5 +90,4 @@ class RoleAdmin(admin.ModelAdmin):
 admin.site.register(Restaurant, RestaurantAdmin)
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
-admin.site.unregister(Group)
 admin.site.register(Role, RoleAdmin)

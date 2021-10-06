@@ -6,7 +6,8 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 
 from apps.accounts.models import Restaurant, Profile, Role
-from apps.accounts.serializers import UserSerializer, PermissionSerializer, ProfileSerializer
+from apps.accounts.serializers import UserSerializer, PermissionSerializer, ProfileSerializer, RoleMiniSerializer, \
+    RoleSerializer
 from restaurant.permissions import DjangoModelPermissionsWithRead
 
 
@@ -61,7 +62,7 @@ class ListCreateUserAPIView(generics.ListCreateAPIView):
     permission_classes = [DjangoModelPermissionsWithRead]
 
     def get_queryset(self):
-        return User.objects.filter(profile__restaurant=self.request.user.profile.restaurant)
+        return User.objects.filter(profile__restaurant=self.request.user.profile.restaurant, is_active=True)
 
     def perform_create(self, serializer):
         instance = serializer.save()
@@ -77,8 +78,28 @@ class RetrieveUpdateDestroyUserAPIView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [DjangoModelPermissionsWithRead]
 
     def get_queryset(self):
-        return User.objects.filter(profile__restaurant=self.request.user.profile.restaurant)
+        return User.objects.filter(profile__restaurant=self.request.user.profile.restaurant, is_active=True)
 
     def perform_destroy(self, instance):
         instance.is_active = False
         instance.save()
+
+
+class ListCreateRoleAPIView(generics.ListCreateAPIView):
+    permission_classes = [DjangoModelPermissionsWithRead]
+    serializer_class = RoleSerializer
+
+    def get_queryset(self):
+        return Role.objects.filter(restaurant=self.request.user.profile.restaurant)
+
+    def perform_create(self, serializer):
+        restaurant = self.request.user.profile.restaurant
+        serializer.save(restaurant=restaurant)
+
+
+class RetrieveUpdateDestroyRoleAPIView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [DjangoModelPermissionsWithRead]
+    serializer_class = RoleSerializer
+
+    def get_queryset(self):
+        return Role.objects.filter(restaurant=self.request.user.profile.restaurant)

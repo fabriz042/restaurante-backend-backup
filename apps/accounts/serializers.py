@@ -10,6 +10,7 @@ class RoleMiniSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = []
+        extra_kwargs = {'permissions': {'write_only': False}}
 
     def to_representation(self, instance):
         role = Role.objects.get(id=instance.id)
@@ -58,3 +59,15 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = [
             'phone'
         ]
+
+
+class RoleSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Role
+        fields = ['id', 'role_name', 'permissions']
+
+    def to_representation(self, instance):
+        data = super(RoleSerializer, self).to_representation(instance)
+        data['permissions'] = PermissionSerializer(instance.permissions, many=True).data
+        return data
