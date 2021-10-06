@@ -61,7 +61,7 @@ class RoleAdmin(admin.ModelAdmin):
     inlines = [
     ]
     list_display = [
-        'name',
+        'role_name',
         'restaurant'
     ]
     list_filter = [

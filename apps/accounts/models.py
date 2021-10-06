@@ -1,8 +1,13 @@
+import datetime
+
 from django.contrib.auth.models import User, Group
 from django.db import models
 
-
 # Create your models here.
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
+
+
 class Restaurant(models.Model):
     class States(models.IntegerChoices):
         ACTIVE = 0, 'Activo'
@@ -126,6 +131,14 @@ class Profile(models.Model):
 
 
 class Role(Group):
+    role_name = models.CharField(
+        default='',
+        null=True,
+        blank=False,
+        verbose_name='Nombre',
+        max_length=100
+    )
+
     restaurant = models.ForeignKey(
         Restaurant,
         on_delete=models.CASCADE,
@@ -137,3 +150,15 @@ class Role(Group):
     class Meta:
         verbose_name = 'Rol'
         verbose_name_plural = 'Roles'
+        constraints = [
+            models.UniqueConstraint(fields=['role_name', 'restaurant'], name='unique_rol_name')
+        ]
+
+
+@receiver(pre_save, sender=Role)
+def role_is_saving(sender, instance, *args, **kwargs):
+    instance.name = 'role_name_{}_restaurant_{}_datetime_{}'.format(
+        instance.role_name,
+        str(instance.restaurant.id),
+        datetime.datetime.now()
+    )
