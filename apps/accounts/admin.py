@@ -6,6 +6,9 @@ from django.contrib.auth.models import User, Group, Permission
 from apps.accounts.models import Restaurant, Profile, Settings, Role
 from django.contrib.auth.admin import UserAdmin as AuthUserAdmin, GroupAdmin
 
+from apps.document_type.models import DocumentType
+from apps.provider.models import Provider
+
 
 class ProfileTabularInline(admin.TabularInline):
     model = Profile
@@ -28,13 +31,37 @@ class RoleTabularInline(admin.TabularInline):
     model = Role
     extra = 1
 
+    fields = [
+        'role_name',
+        'permissions'
+    ]
+
+
+class DocumentTypeTabularInline(admin.TabularInline):
+    model = DocumentType
+    extra = 1
+
+
+class ProviderTabularInline(admin.TabularInline):
+    model = Provider
+    extra = 1
+
+    fields = [
+        'name',
+        'document_type',
+        'document',
+        'is_active'
+    ]
+
 
 class RestaurantAdmin(admin.ModelAdmin):
     """PartyCompanyAdmin Class"""
     inlines = [
         ProfileTabularInline,
         SettingsStackedInLine,
-        RoleTabularInline
+        RoleTabularInline,
+        DocumentTypeTabularInline,
+        ProviderTabularInline
     ]
     list_display = [
         'name',
@@ -70,7 +97,7 @@ class PermissionStackedInLine(admin.StackedInline):
 class RoleAdmin(GroupAdmin):
     """PartyCompanyAdmin Class"""
     inlines = [
-    #    PermissionStackedInLine
+        #    PermissionStackedInLine
     ]
     list_display = [
         'id',
