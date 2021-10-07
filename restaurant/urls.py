@@ -21,7 +21,7 @@ from django.urls import path, include
 urlpatterns = [
     path('api/admin/', admin.site.urls),
     path('api/accounts/', include('apps.accounts.urls')),
-
+    path('api/document_type/', include('apps.document_type.urls')),
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
