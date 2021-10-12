@@ -23,6 +23,7 @@ urlpatterns = [
     path('api/accounts/', include('apps.accounts.urls')),
     path('api/document_type/', include('apps.document_type.urls')),
     path('api/provider/', include('apps.provider.urls')),
+    path('api/product/', include('apps.product.urls')),
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
