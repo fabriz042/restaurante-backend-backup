@@ -52,3 +52,34 @@ class ProductCategory(models.Model):
     class Meta:
         verbose_name = "Categoría de Producto"
         verbose_name_plural = "Categorías de Producto"
+
+
+class MeasurementUnit(models.Model):
+    restaurant = models.ForeignKey(
+        Restaurant,
+        null=False,
+        on_delete=models.CASCADE,
+        verbose_name='Restaurant',
+        related_name='measurement_units'
+    )
+    name = models.CharField(
+        max_length=100,
+        null=False,
+        blank=False,
+        verbose_name='Nombre'
+    )
+    code = models.CharField(
+        max_length=100,
+        null=False,
+        blank=False,
+        verbose_name='Código'
+    )
+    is_active = models.BooleanField(
+        null=False,
+        default=True,
+        verbose_name="Activo"
+    )
+
+    class Meta:
+        verbose_name = "Unidad de Medida"
+        verbose_name_plural = "Unidades de Medida"
