@@ -7,7 +7,7 @@ from apps.accounts.models import Restaurant, Profile, Settings, Role
 from django.contrib.auth.admin import UserAdmin as AuthUserAdmin, GroupAdmin
 
 from apps.document_type.models import DocumentType
-from apps.product.models import Brand, ProductCategory, MeasurementUnit
+from apps.product.models import Brand, ProductCategory, MeasurementUnit, Product
 from apps.provider.models import Provider
 
 
@@ -70,6 +70,11 @@ class MeasurementUnitTabularInline(admin.TabularInline):
     extra = 1
 
 
+class ProductTabularInline(admin.TabularInline):
+    model = Product
+    extra = 1
+
+
 class RestaurantAdmin(admin.ModelAdmin):
     """PartyCompanyAdmin Class"""
     inlines = [
@@ -80,7 +85,8 @@ class RestaurantAdmin(admin.ModelAdmin):
         ProviderTabularInline,
         BrandTabularInline,
         ProductCategoryTabularInline,
-        MeasurementUnitTabularInline
+        MeasurementUnitTabularInline,
+        ProductTabularInline
     ]
     list_display = [
         'id',

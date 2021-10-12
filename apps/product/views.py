@@ -1,8 +1,9 @@
 from rest_framework import generics
 
 # Create your views here.
-from apps.product.models import Brand, ProductCategory, MeasurementUnit
-from apps.product.serializers import BrandSerializer, ProductCategorySerializer, MeasurementUnitSerializer
+from apps.product.models import Brand, ProductCategory, MeasurementUnit, Product
+from apps.product.serializers import BrandSerializer, ProductCategorySerializer, MeasurementUnitSerializer, \
+    ProductSerializer
 from restaurant.permissions import DjangoModelPermissionsWithRead
 
 
@@ -90,6 +91,41 @@ class PerformUpdateDestroyMeasurementUnitAPIView(generics.RetrieveUpdateDestroyA
 
     def get_queryset(self):
         return MeasurementUnit.objects.filter(
+            is_active=True,
+            restaurant=self.request.user.profile.restaurant
+        )
+
+    def perform_destroy(self, instance):
+        instance.is_active = False
+        instance.save()
+
+
+class ListCreateProductAPIView(generics.ListCreateAPIView):
+    serializer_class = ProductSerializer
+    permission_classes = [DjangoModelPermissionsWithRead]
+
+    def get_queryset(self):
+        return Product.objects.select_related(
+            'measurement_unit', 'category', 'brand'
+        ).filter(
+            is_active=True,
+            restaurant=self.request.user.profile.restaurant
+        )
+
+    def perform_create(self, serializer):
+        serializer.save(
+            restaurant=self.request.user.profile.restaurant
+        )
+
+
+class PerformUpdateDestroyProductAPIView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = ProductSerializer
+    permission_classes = [DjangoModelPermissionsWithRead]
+
+    def get_queryset(self):
+        return Product.objects.select_related(
+            'measurement_unit', 'category', 'brand'
+        ).filter(
             is_active=True,
             restaurant=self.request.user.profile.restaurant
         )

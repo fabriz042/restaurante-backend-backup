@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.product.models import Brand, ProductCategory, MeasurementUnit
+from apps.product.models import Brand, ProductCategory, MeasurementUnit, Product
 
 
 class BrandSerializer(serializers.ModelSerializer):
@@ -32,3 +32,26 @@ class MeasurementUnitSerializer(serializers.ModelSerializer):
             'code',
             'is_active'
         ]
+
+
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = [
+            'id',
+            'name',
+            'measurement_unit',
+            'category',
+            'brand',
+            'is_active'
+        ]
+
+    def to_representation(self, instance):
+        data = super(ProductSerializer, self).to_representation(instance)
+        if instance.measurement_unit:
+            data['measurement_unit'] = MeasurementUnitSerializer(instance.measurement_unit).data
+        if instance.category:
+            data['category'] = ProductCategorySerializer(instance.category).data
+        if instance.brand:
+            data['brand'] = BrandSerializer(instance.brand).data
+        return data

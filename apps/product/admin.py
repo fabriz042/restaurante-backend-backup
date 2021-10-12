@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from apps.product.models import Brand, ProductCategory, MeasurementUnit
+from apps.product.models import Brand, ProductCategory, MeasurementUnit, Product
 
 
 class BrandAdmin(admin.ModelAdmin):
@@ -60,6 +60,28 @@ class MeasurementUnitAdmin(admin.ModelAdmin):
     ]
 
 
+class ProductAdmin(admin.ModelAdmin):
+    inlines = [
+        # DocumentTypeStackedInLine
+    ]
+    list_display = [
+        'id',
+        'name',
+        'category',
+        'is_active',
+        'restaurant'
+    ]
+    list_filter = [
+        'restaurant',
+        'category',
+        'is_active'
+    ]
+    search_fields = [
+        'name'
+    ]
+
+
 admin.site.register(Brand, BrandAdmin)
 admin.site.register(ProductCategory, ProductCategoryAdmin)
 admin.site.register(MeasurementUnit, MeasurementUnitAdmin)
+admin.site.register(Product, ProductAdmin)
