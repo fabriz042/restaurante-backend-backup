@@ -4,5 +4,6 @@ from apps.provider.views import ListCreateProviderAPIView, RetrieveUpdateDestroy
 
 urlpatterns = [
     path('', ListCreateProviderAPIView.as_view()),
-    path('<pk>', RetrieveUpdateDestroyProviderAPIView.as_view())
+    path('<pk>', RetrieveUpdateDestroyProviderAPIView.as_view()),
+    path('pricing/', include('apps.provider.urls.pricing')),
 ]

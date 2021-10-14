@@ -55,3 +55,16 @@ class ProductSerializer(serializers.ModelSerializer):
         if instance.brand:
             data['brand'] = BrandSerializer(instance.brand).data
         return data
+
+
+class ProductMiniSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = [
+            'id',
+            'name',
+            'measurement_unit',
+            'category',
+            'brand',
+            'is_active'
+        ]

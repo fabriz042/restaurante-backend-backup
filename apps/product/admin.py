@@ -2,6 +2,12 @@ from django.contrib import admin
 
 # Register your models here.
 from apps.product.models import Brand, ProductCategory, MeasurementUnit, Product
+from apps.provider.models import PrizingTable
+
+
+class PrizingTableTabularInline(admin.TabularInline):
+    model = PrizingTable
+    extra = 1
 
 
 class BrandAdmin(admin.ModelAdmin):
@@ -62,7 +68,7 @@ class MeasurementUnitAdmin(admin.ModelAdmin):
 
 class ProductAdmin(admin.ModelAdmin):
     inlines = [
-        # DocumentTypeStackedInLine
+        PrizingTableTabularInline
     ]
     list_display = [
         'id',

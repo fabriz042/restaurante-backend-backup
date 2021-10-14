@@ -6,9 +6,20 @@ from django.contrib.auth.models import User, Group, Permission
 from apps.accounts.models import Restaurant, Profile, Settings, Role
 from django.contrib.auth.admin import UserAdmin as AuthUserAdmin, GroupAdmin
 
+from apps.currency.models import Currency
 from apps.document_type.models import DocumentType
 from apps.product.models import Brand, ProductCategory, MeasurementUnit, Product
-from apps.provider.models import Provider
+from apps.provider.models import Provider, PrizingTable
+
+
+class CurrencyTabularInline(admin.TabularInline):
+    model = Currency
+    extra = 1
+
+
+class PrizingTableTabularInline(admin.TabularInline):
+    model = PrizingTable
+    extra = 1
 
 
 class ProfileTabularInline(admin.TabularInline):
@@ -86,7 +97,9 @@ class RestaurantAdmin(admin.ModelAdmin):
         BrandTabularInline,
         ProductCategoryTabularInline,
         MeasurementUnitTabularInline,
-        ProductTabularInline
+        ProductTabularInline,
+        CurrencyTabularInline,
+        PrizingTableTabularInline
     ]
     list_display = [
         'id',

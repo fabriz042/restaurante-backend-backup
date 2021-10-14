@@ -1,11 +1,17 @@
 from django.contrib import admin
 
 from apps.currency.models import Currency
+from apps.provider.models import PrizingTable
+
+
+class PrizingTableTabularInline(admin.TabularInline):
+    model = PrizingTable
+    extra = 1
 
 
 class CurrencyAdmin(admin.ModelAdmin):
     inlines = [
-        #    PermissionStackedInLine
+        PrizingTableTabularInline
     ]
     list_display = [
         'id',
