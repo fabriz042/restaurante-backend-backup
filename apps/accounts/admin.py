@@ -10,7 +10,12 @@ from apps.currency.models import Currency
 from apps.document_type.models import DocumentType
 from apps.product.models import Brand, ProductCategory, MeasurementUnit, Product
 from apps.provider.models import Provider, PrizingTable
-from apps.warehouse.models import Warehouse
+from apps.warehouse.models import Warehouse, WarehouseMovement
+
+
+class WarehouseMovementTabularInLine(admin.TabularInline):
+    model = WarehouseMovement
+    extra = 1
 
 
 class WarehouseTabularInline(admin.TabularInline):
@@ -106,7 +111,8 @@ class RestaurantAdmin(admin.ModelAdmin):
         ProductTabularInline,
         CurrencyTabularInline,
         PrizingTableTabularInline,
-        WarehouseTabularInline
+        WarehouseTabularInline,
+        WarehouseMovementTabularInLine
     ]
     list_display = [
         'id',

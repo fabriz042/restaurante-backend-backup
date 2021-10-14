@@ -1,13 +1,17 @@
 from django.contrib import admin
 
-
 # Register your models here.
-from apps.warehouse.models import Warehouse
+from apps.warehouse.models import Warehouse, WarehouseMovement
+
+
+class WarehouseMovementTabularInLine(admin.TabularInline):
+    model = WarehouseMovement
+    extra = 1
 
 
 class WarehouseAdmin(admin.ModelAdmin):
     inlines = [
-        # PrizingTableTabularInline
+        WarehouseMovementTabularInLine
     ]
     list_display = [
         'id',
@@ -26,4 +30,27 @@ class WarehouseAdmin(admin.ModelAdmin):
     ]
 
 
+class WarehouseMovementAdmin(admin.ModelAdmin):
+    inlines = [
+        # PrizingTableTabularInline
+    ]
+    list_display = [
+        'id',
+        'warehouse',
+        'quantity',
+        'is_active',
+        'restaurant'
+    ]
+    list_filter = [
+        'restaurant',
+        'is_active',
+        'warehouse',
+        'product'
+    ]
+    search_fields = [
+        # 'name'
+    ]
+
+
 admin.site.register(Warehouse, WarehouseAdmin)
+admin.site.register(WarehouseMovement, WarehouseMovementAdmin)
