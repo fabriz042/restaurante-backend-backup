@@ -51,7 +51,9 @@ class ListCreatePrizingTableAPIView(generics.ListCreateAPIView):
     ]
 
     def get_queryset(self):
-        return PrizingTable.objects.filter(
+        return PrizingTable.objects.select_related(
+            'provider', 'product', 'currency'
+        ).filter(
             is_active=True,
             restaurant=self.request.user.profile.restaurant
         )
@@ -65,7 +67,9 @@ class RetrieveEditDestroyPrizingTableAPIView(generics.RetrieveUpdateDestroyAPIVi
     serializer_class = PrizingTableSerializer
 
     def get_queryset(self):
-        return PrizingTable.objects.filter(
+        return PrizingTable.objects.select_related(
+            'provider', 'product', 'currency'
+        ).filter(
             is_active=True,
             restaurant=self.request.user.profile.restaurant
         )
