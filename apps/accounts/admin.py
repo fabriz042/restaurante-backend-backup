@@ -8,9 +8,15 @@ from django.contrib.auth.admin import UserAdmin as AuthUserAdmin, GroupAdmin
 
 from apps.currency.models import Currency
 from apps.document_type.models import DocumentType
+from apps.operations.models import PaymentType
 from apps.product.models import Brand, ProductCategory, MeasurementUnit, Product
 from apps.provider.models import Provider, PrizingTable
 from apps.warehouse.models import Warehouse, WarehouseMovement
+
+
+class PaymentTypeTabularInLine(admin.TabularInline):
+    model = PaymentType
+    extra = 1
 
 
 class WarehouseMovementTabularInLine(admin.TabularInline):
@@ -112,7 +118,8 @@ class RestaurantAdmin(admin.ModelAdmin):
         CurrencyTabularInline,
         PrizingTableTabularInline,
         WarehouseTabularInline,
-        WarehouseMovementTabularInLine
+        WarehouseMovementTabularInLine,
+        PaymentTypeTabularInLine
     ]
     list_display = [
         'id',

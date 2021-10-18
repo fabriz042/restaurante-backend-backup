@@ -121,7 +121,8 @@ class Profile(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=False,
-        verbose_name='Restaurante'
+        verbose_name='Restaurante',
+        related_name='user_profiles'
     )
 
     class Meta:
