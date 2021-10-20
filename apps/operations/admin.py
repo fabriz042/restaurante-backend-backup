@@ -2,7 +2,12 @@ from django.contrib import admin
 
 # Register your models here.
 from apps.accounts.admin import PurchaseTabularInLine
-from apps.operations.models import PaymentType, Purchase
+from apps.operations.models import PaymentType, Purchase, PurchaseDetail
+
+
+class PurchaseDetailTabularInLine(admin.TabularInline):
+    model = PurchaseDetail
+    extra = 1
 
 
 class PaymentTypeAdmin(admin.ModelAdmin):
@@ -26,7 +31,7 @@ class PaymentTypeAdmin(admin.ModelAdmin):
 
 class PurchaseAdmin(admin.ModelAdmin):
     inlines = [
-        #    PermissionStackedInLine
+        PurchaseDetailTabularInLine
     ]
     list_display = [
         'id',

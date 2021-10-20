@@ -4,6 +4,7 @@ from django.db import models
 from apps.accounts.models import Restaurant
 from apps.currency.models import Currency
 from apps.provider.models import Provider
+from apps.warehouse.models import WarehouseMovement
 
 
 class PaymentType(models.Model):
@@ -108,3 +109,53 @@ class Purchase(Operation):
     class Meta:
         verbose_name = 'Compra'
         verbose_name_plural = 'Compras'
+
+
+class OperationsDetail(models.Model):
+    operation = models.ForeignKey(
+        Operation,
+        default=None,
+        on_delete=models.CASCADE,
+        related_name='details',
+        verbose_name='Operation'
+    )
+    subtotal = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        default=0,
+        null=False,
+        verbose_name='Sub Total'
+    )
+    unitary_value = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        default=0,
+        null=False,
+        verbose_name='Valor Unitario'
+    )
+    igv = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        default=0,
+        null=False,
+        verbose_name='IGV'
+    )
+    movement = models.ForeignKey(
+        WarehouseMovement,
+        null=False,
+        on_delete=models.CASCADE,
+        related_name='detail_operation',
+        verbose_name='Movimiento'
+    )
+    is_active = models.BooleanField(
+        default=True,
+        null=False,
+        verbose_name='Activo'
+    )
+
+    class Meta:
+        verbose_name = 'Detalle de Operacion'
+
+
+class PurchaseDetail(OperationsDetail):
+    pass
