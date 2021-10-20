@@ -1,8 +1,9 @@
 from django.db import models
 
-
 # Create your models here.
 from apps.accounts.models import Restaurant
+from apps.currency.models import Currency
+from apps.provider.models import Provider
 
 
 class PaymentType(models.Model):
@@ -28,3 +29,82 @@ class PaymentType(models.Model):
     class Meta:
         verbose_name = "Tipo de Pago"
         verbose_name_plural = "Tipos de Pago"
+
+
+class Operation(models.Model):
+    restaurant = models.ForeignKey(
+        Restaurant,
+        on_delete=models.CASCADE,
+        related_name='operations',
+        null=False,
+        verbose_name='Restaurante'
+    )
+    currency = models.ForeignKey(
+        Currency,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='operations',
+        verbose_name='Tipo de moneda'
+    )
+    sub_total = models.DecimalField(
+        decimal_places=2,
+        max_digits=8,
+        null=False,
+        default=0,
+        verbose_name='SubTotal'
+    )
+    serie = models.CharField(
+        max_length=10,
+        null=True,
+        blank=True,
+        verbose_name='Serie'
+    )
+    correlative = models.IntegerField(
+        default=0,
+        null=True,
+        verbose_name='Correlativo'
+    )
+    payment_type = models.ForeignKey(
+        PaymentType,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name='Tipo de Pago'
+    )
+    issue_date = models.DateField(
+        null=False,
+        verbose_name='Fecha'
+    )
+    igv = models.DecimalField(
+        decimal_places=2,
+        max_digits=8,
+        null=False,
+        default=0,
+        verbose_name='IGV'
+    )
+    is_active = models.BooleanField(
+        default=True,
+        null=False,
+        verbose_name='Activo'
+    )
+
+    @property
+    def total(self):
+        return self.sub_total + self.igv
+
+    class Meta:
+        verbose_name = 'Operación'
+        verbose_name_plural = 'Operaciones'
+
+
+class Purchase(Operation):
+    provider = models.ForeignKey(
+        Provider,
+        null=True,
+        on_delete=models.SET_NULL,
+        default=None,
+        verbose_name='Proveedor',
+    )
+
+    class Meta:
+        verbose_name = 'Compra'
+        verbose_name_plural = 'Compras'

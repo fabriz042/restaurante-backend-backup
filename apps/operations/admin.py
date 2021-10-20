@@ -1,13 +1,13 @@
 from django.contrib import admin
 
-
 # Register your models here.
-from apps.operations.models import PaymentType
+from apps.accounts.admin import PurchaseTabularInLine
+from apps.operations.models import PaymentType, Purchase
 
 
 class PaymentTypeAdmin(admin.ModelAdmin):
     inlines = [
-        #    PermissionStackedInLine
+        PurchaseTabularInLine
     ]
     list_display = [
         'id',
@@ -24,4 +24,27 @@ class PaymentTypeAdmin(admin.ModelAdmin):
     ]
 
 
+class PurchaseAdmin(admin.ModelAdmin):
+    inlines = [
+        #    PermissionStackedInLine
+    ]
+    list_display = [
+        'id',
+        'provider',
+        'serie',
+        'correlative',
+        'is_active',
+        'restaurant',
+        'is_active'
+    ]
+    list_filter = [
+        'restaurant',
+        'is_active'
+    ]
+    search_fields = [
+        # 'name',
+    ]
+
+
 admin.site.register(PaymentType, PaymentTypeAdmin)
+admin.site.register(Purchase, PurchaseAdmin)
