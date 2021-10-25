@@ -3,6 +3,12 @@ from django.contrib import admin
 # Register your models here.
 from apps.accounts.admin import PurchaseTabularInLine
 from apps.operations.models import PaymentType, Purchase, PurchaseDetail
+from apps.payments.models import Payment
+
+
+class PaymentTabularInLine(admin.TabularInline):
+    model = Payment
+    extra = 1
 
 
 class PurchaseDetailTabularInLine(admin.TabularInline):
@@ -31,7 +37,8 @@ class PaymentTypeAdmin(admin.ModelAdmin):
 
 class PurchaseAdmin(admin.ModelAdmin):
     inlines = [
-        PurchaseDetailTabularInLine
+        PurchaseDetailTabularInLine,
+        PaymentTabularInLine
     ]
     list_display = [
         'id',
