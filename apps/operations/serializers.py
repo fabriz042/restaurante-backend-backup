@@ -31,6 +31,9 @@ class PurchaseSerializer(serializers.ModelSerializer):
             data['payment_type'] = PaymentTypeSerializer(instance.payment_type).data
         if instance.provider:
             data['provider'] = ProviderSerializer(instance.provider).data
+        data['total'] = instance.operation_value
+        data['paid'] = instance.paid
+        data['debt'] = instance.debt
         return data
 
 

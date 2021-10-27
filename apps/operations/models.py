@@ -1,6 +1,8 @@
 from django.db import models
 
 # Create your models here.
+from django.db.models import Sum, F
+
 from apps.accounts.models import Restaurant
 from apps.currency.models import Currency
 from apps.provider.models import Provider
@@ -109,6 +111,26 @@ class Purchase(Operation):
     class Meta:
         verbose_name = 'Compra'
         verbose_name_plural = 'Compras'
+
+    @property
+    def operation_value(self):
+        mount = self.details.all().aggregate(
+            subtotal_total=Sum('subtotal'), igv_total=Sum('igv')
+        )
+        subtotal = mount['subtotal_total'] if mount['subtotal_total'] else 0
+        igv = mount['igv_total'] if mount['igv_total'] else 0
+        return subtotal + igv
+
+    @property
+    def paid(self):
+        mount = self.payments.all().aggregate(
+            mount=Sum('mount')
+        )
+        return mount['mount'] if mount['mount'] else 0
+
+    @property
+    def debt(self):
+        return self.operation_value - self.paid
 
 
 class OperationsDetail(models.Model):
