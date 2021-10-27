@@ -43,10 +43,16 @@ class PaymentTypeRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIV
 class PurchaseListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = PurchaseSerializer
     permission_classes = [DjangoModelPermissionsWithRead]
+    filter_backends = [
+        DjangoFilterBackend
+    ]
+    filterset_fields = [
+        'payment_type', 'currency', 'provider'
+    ]
 
     def get_queryset(self):
         return Purchase.objects.select_related(
-            'payment_type', 'currency'
+            'payment_type', 'currency', 'provider'
         ).filter(
             is_active=True,
             restaurant__user_profiles__user=self.request.user
