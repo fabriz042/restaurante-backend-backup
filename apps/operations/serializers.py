@@ -18,7 +18,7 @@ class PurchaseSerializer(serializers.ModelSerializer):
         model = Purchase
         fields = [
             'id', 'currency', 'sub_total', 'serie', 'correlative',
-            'payment_type', 'issue_date', 'igv', 'is_active'
+            'payment_type', 'issue_date', 'igv', 'is_active', 'provider'
         ]
         read_only_fields = ('is_active', 'id')
 
@@ -28,6 +28,8 @@ class PurchaseSerializer(serializers.ModelSerializer):
             data['currency'] = CurrencySerializer(instance.currency).data
         if instance.payment_type:
             data['payment_type'] = PaymentTypeSerializer(instance.payment_type).data
+        if instance.provider:
+            data['provider'] = PaymentTypeSerializer(instance.payment_type).data
         return data
 
 
