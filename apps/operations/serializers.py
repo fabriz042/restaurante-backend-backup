@@ -3,6 +3,7 @@ from rest_framework import serializers
 from apps.currency.serializers import CurrencySerializer
 from apps.operations.models import PaymentType, Purchase, PurchaseDetail
 from apps.product.serializers import ProductSerializer
+from apps.provider.serializers import ProviderSerializer
 from apps.warehouse.models import WarehouseMovement
 from apps.warehouse.serializers import WarehouseMovementSerializer, WarehouseSerializer
 
@@ -29,7 +30,7 @@ class PurchaseSerializer(serializers.ModelSerializer):
         if instance.payment_type:
             data['payment_type'] = PaymentTypeSerializer(instance.payment_type).data
         if instance.provider:
-            data['provider'] = PaymentTypeSerializer(instance.payment_type).data
+            data['provider'] = ProviderSerializer(instance.provider).data
         return data
 
 
