@@ -1,7 +1,7 @@
 from django.db import models
 
 # Create your models here.
-from django.db.models import Sum
+from django.db.models import Sum, Avg
 
 from apps.accounts.models import Restaurant
 
@@ -160,7 +160,7 @@ class Product(models.Model):
 
     @property
     def average_real_cost(self):
-        cost = self.detail_operation.aggregate(total=Sum('detail_operation__subtotal'))
+        cost = self.detail_operation.aggregate(total=Avg('detail_operation__subtotal'))
         if cost['total']:
             return cost['total']
         return 0
@@ -171,7 +171,7 @@ class Product(models.Model):
 
     @property
     def average_igv(self):
-        igv = self.detail_operation.aggregate(total=Sum('detail_operation__igv'))
+        igv = self.detail_operation.aggregate(total=Avg('detail_operation__igv'))
         if igv['total']:
             return igv['total']
         return 0

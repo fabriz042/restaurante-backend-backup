@@ -34,7 +34,7 @@ class RecipeDetailSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    details = RecipeDetailSerializer(many=True, context='self.context')
+    details = RecipeDetailSerializer(many=True, context='self.context', read_only=True)
 
     class Meta:
         model = Recipe
