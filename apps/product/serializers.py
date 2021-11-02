@@ -38,13 +38,16 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = [
-            'id',
-            'name',
-            'measurement_unit',
-            'category',
-            'brand',
-            'is_active'
-        ]
+                     'id',
+                     'name',
+                     'measurement_unit',
+                     'category',
+                     'brand',
+                     'net_weight',
+                     'gross_weight',
+                     'yield_percentage',
+                     'is_active'
+                 ]
 
     def to_representation(self, instance):
         data = super(ProductSerializer, self).to_representation(instance)

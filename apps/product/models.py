@@ -1,6 +1,8 @@
 from django.db import models
 
 # Create your models here.
+from django.db.models import Sum
+
 from apps.accounts.models import Restaurant
 
 
@@ -113,6 +115,27 @@ class Product(models.Model):
         verbose_name='Categoría de Producto',
         related_name='products'
     )
+    net_weight = models.DecimalField(
+        decimal_places=2,
+        max_digits=8,
+        null=False,
+        default=0,
+        verbose_name='Peso Neto'
+    )
+    gross_weight = models.DecimalField(
+        decimal_places=2,
+        max_digits=8,
+        null=False,
+        default=0,
+        verbose_name='Peso Bruto'
+    )
+    yield_percentage = models.DecimalField(
+        decimal_places=2,
+        max_digits=8,
+        null=False,
+        default=0,
+        verbose_name='Porcentaje de Rendimiento'
+    )
     brand = models.ForeignKey(
         Brand,
         null=True,
@@ -130,3 +153,35 @@ class Product(models.Model):
     class Meta:
         verbose_name = "Producto"
         verbose_name_plural = "Productos"
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        self.yield_percentage = self.net_weight / self.gross_weight
+        super(Product, self).save(force_insert, force_update, using, update_fields)
+
+    @property
+    def average_real_cost(self):
+        cost = self.detail_operation.aggregate(total=Sum('detail_operation__subtotal'))
+        if cost['total']:
+            return cost['total']
+        return 0
+
+    @property
+    def detail_operation(self):
+        return self.movements.filter(is_active=True, detail_operation__is_active=True).exclude(detail_operation=None)
+
+    @property
+    def average_igv(self):
+        igv = self.detail_operation.aggregate(total=Sum('detail_operation__igv'))
+        if igv['total']:
+            return igv['total']
+        return 0
+
+    @property
+    def average_cost(self):
+        return self.average_real_cost + self.average_igv
+
+    @property
+    def clean_price(self):
+        if self.yield_percentage == 0:
+            return self.average_cost
+        return self.average_cost/self.yield_percentage

@@ -11,7 +11,17 @@ from apps.document_type.models import DocumentType
 from apps.operations.models import PaymentType, Purchase
 from apps.product.models import Brand, ProductCategory, MeasurementUnit, Product
 from apps.provider.models import Provider, PrizingTable
+from apps.recipe.models import Recipe
 from apps.warehouse.models import Warehouse, WarehouseMovement
+
+
+class RecipeTabularInLine(admin.TabularInline):
+    model = Recipe
+    extra = 1
+    fields = [
+        'name',
+        'is_active',
+    ]
 
 
 class PurchaseTabularInLine(admin.TabularInline):
@@ -132,7 +142,8 @@ class RestaurantAdmin(admin.ModelAdmin):
         WarehouseTabularInline,
         WarehouseMovementTabularInLine,
         PaymentTypeTabularInLine,
-        PurchaseTabularInLine
+        PurchaseTabularInLine,
+        RecipeTabularInLine
     ]
     list_display = [
         'id',

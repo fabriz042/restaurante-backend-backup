@@ -162,7 +162,7 @@ class OperationsDetail(models.Model):
         null=False,
         verbose_name='IGV'
     )
-    movement = models.ForeignKey(
+    movement = models.OneToOneField(
         WarehouseMovement,
         null=False,
         on_delete=models.CASCADE,
