@@ -8,6 +8,7 @@ from django.contrib.auth.admin import UserAdmin as AuthUserAdmin, GroupAdmin
 
 from apps.currency.models import Currency
 from apps.document_type.models import DocumentType
+from apps.hall.admin import HallTabularInLine
 from apps.operations.models import PaymentType, Purchase
 from apps.product.models import Brand, ProductCategory, MeasurementUnit, Product
 from apps.provider.models import Provider, PrizingTable
@@ -143,7 +144,8 @@ class RestaurantAdmin(admin.ModelAdmin):
         WarehouseMovementTabularInLine,
         PaymentTypeTabularInLine,
         PurchaseTabularInLine,
-        RecipeTabularInLine
+        RecipeTabularInLine,
+        HallTabularInLine
     ]
     list_display = [
         'id',
