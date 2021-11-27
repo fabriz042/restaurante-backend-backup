@@ -54,3 +54,15 @@ class RecipeSerializer(serializers.ModelSerializer):
             decimal_places=2
         ).to_representation(instance.food_cost)
         return data
+
+
+class RecipeMiniSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recipe
+        fields = [
+            'id',
+            'name',
+            'description',
+            'details',
+            'is_active'
+        ]

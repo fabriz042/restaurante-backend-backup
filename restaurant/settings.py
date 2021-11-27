@@ -52,7 +52,8 @@ INSTALLED_APPS = [
     'apps.operations',
     'apps.payments',
     'apps.recipe',
-    'apps.hall'
+    'apps.hall',
+    'apps.menu'
 ]
 
 MIDDLEWARE = [

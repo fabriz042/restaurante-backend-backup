@@ -2,6 +2,7 @@ from django.shortcuts import render
 
 
 # Create your views here.
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics
 
 from apps.hall.models import Hall, Table
@@ -43,6 +44,10 @@ class HallRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
 class TableCreateAPIView(generics.ListCreateAPIView):
     serializer_class = TableSerializer
     permission_classes = [DjangoModelPermissionsWithRead]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = [
+        'hall'
+    ]
 
     def get_queryset(self):
         return Table.objects.filter(
