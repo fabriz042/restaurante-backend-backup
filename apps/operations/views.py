@@ -2,8 +2,9 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics
 
 # Create your views here.
-from apps.operations.models import PaymentType, Purchase, PurchaseDetail
-from apps.operations.serializers import PaymentTypeSerializer, PurchaseSerializer, PurchaseDetailSerializer
+from apps.operations.models import PaymentType, Purchase, PurchaseDetail, Order
+from apps.operations.serializers import PaymentTypeSerializer, PurchaseSerializer, PurchaseDetailSerializer, \
+    OrderSerializer
 from apps.warehouse.models import WarehouseMovement
 from apps.warehouse.serializers import WarehouseMovementSerializer
 from restaurant.permissions import DjangoModelPermissionsWithRead
@@ -133,3 +134,43 @@ class PurchaseDetailRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyA
         movement_serializer.is_valid(raise_exception=True)
         movement = movement_serializer.save()
         serializer.save()
+
+
+class OrderListCreateAPIView(generics.ListCreateAPIView):
+    permission_classes = [DjangoModelPermissionsWithRead]
+    serializer_class = OrderSerializer
+    filter_backends = [
+        DjangoFilterBackend
+    ]
+    filterset_fields = [
+        'table',
+        'waiter'
+    ]
+
+    def get_queryset(self):
+        return Order.objects.select_related(
+            'table', 'waiter'
+        ).filter(
+            is_active=True,
+            restaurant__user_profiles__user=self.request.user
+        )
+
+    def perform_create(self, serializer):
+        serializer.save(restaurant=self.request.user.profile.restaurant)
+
+
+class OrderRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [DjangoModelPermissionsWithRead]
+    serializer_class = OrderSerializer
+
+    def get_queryset(self):
+        return Order.objects.select_related(
+            'table', 'waiter'
+        ).filter(
+            is_active=True,
+            restaurant__user_profiles__user=self.request.user
+        )
+
+    def perform_destroy(self, instance):
+        instance.is_active = False
+        instance.save()

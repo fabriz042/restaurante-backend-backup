@@ -1,7 +1,9 @@
 from rest_framework import serializers
 
+from apps.accounts.serializers import UserSerializer
 from apps.currency.serializers import CurrencySerializer
-from apps.operations.models import PaymentType, Purchase, PurchaseDetail
+from apps.hall.serializers import TableSerializer
+from apps.operations.models import PaymentType, Purchase, PurchaseDetail, Order
 from apps.product.serializers import ProductSerializer
 from apps.provider.serializers import ProviderSerializer
 from apps.warehouse.models import WarehouseMovement
@@ -38,7 +40,6 @@ class PurchaseSerializer(serializers.ModelSerializer):
 
 
 class PurchaseDetailSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = PurchaseDetail
         fields = [
@@ -52,5 +53,27 @@ class PurchaseDetailSerializer(serializers.ModelSerializer):
         data['product'] = ProductSerializer(instance.movement.product).data
         data['quantity'] = instance.movement.quantity
         data['warehouse'] = WarehouseSerializer(instance.movement.warehouse).data
+        return data
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = [
+            'id',
+            'table',
+            'start_datetime',
+            'end_datetime',
+            'waiter',
+            'is_active'
+        ]
+        read_only_fields = ('is_active', 'id')
+
+    def to_representation(self, instance):
+        data = super(OrderSerializer, self).to_representation(instance)
+        if instance.table:
+            data['table'] = TableSerializer(instance.table).data
+        if instance.waiter:
+            data['waiter'] = UserSerializer(instance.waiter).data
         return data
 

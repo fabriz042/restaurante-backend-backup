@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 
 # Create your models here.
@@ -5,6 +6,7 @@ from django.db.models import Sum, F
 
 from apps.accounts.models import Restaurant
 from apps.currency.models import Currency
+from apps.hall.models import Table
 from apps.provider.models import Provider
 from apps.warehouse.models import WarehouseMovement
 
@@ -181,3 +183,45 @@ class OperationsDetail(models.Model):
 
 class PurchaseDetail(OperationsDetail):
     pass
+
+
+class Order(models.Model):
+    restaurant = models.ForeignKey(
+        Restaurant,
+        on_delete=models.CASCADE,
+        related_name='orders',
+        null=False,
+        verbose_name='Restaurante'
+    )
+    table = models.ForeignKey(
+        Table,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name='Mesa',
+        related_name='orders'
+    )
+    start_datetime = models.DateTimeField(
+        null=False,
+        verbose_name='Hora de Inicio'
+    )
+    end_datetime = models.DateTimeField(
+        null=False,
+        default=False,
+        verbose_name='Hora de Fin'
+    )
+    waiter = models.ForeignKey(
+        User,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name='Mesero',
+        related_name='orders'
+    )
+    is_active = models.BooleanField(
+        default=True,
+        null=False,
+        verbose_name='Activo'
+    )
+
+    class Meta:
+        verbose_name = 'Pedido'
+        verbose_name_plural = 'Pedidos'
