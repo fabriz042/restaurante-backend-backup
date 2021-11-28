@@ -3,7 +3,8 @@ from rest_framework import serializers
 from apps.accounts.serializers import UserSerializer
 from apps.currency.serializers import CurrencySerializer
 from apps.hall.serializers import TableSerializer
-from apps.operations.models import PaymentType, Purchase, PurchaseDetail, Order
+from apps.menu.serializers import MenuItemSerializer
+from apps.operations.models import PaymentType, Purchase, PurchaseDetail, Order, OrderDetail
 from apps.product.serializers import ProductSerializer
 from apps.provider.serializers import ProviderSerializer
 from apps.warehouse.models import WarehouseMovement
@@ -77,3 +78,25 @@ class OrderSerializer(serializers.ModelSerializer):
             data['waiter'] = UserSerializer(instance.waiter).data
         return data
 
+
+class OrderDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderDetail
+        fields = [
+            'id',
+            'header',
+            'menu_item',
+            'quantity',
+            'state',
+            'warehouse',
+            'is_active'
+        ]
+        read_only_fields = ('is_active', 'id')
+
+    def to_representation(self, instance):
+        data = super(OrderDetailSerializer, self).to_representation(instance)
+        if instance.warehouse:
+            data['warehouse'] = WarehouseSerializer(instance.warehouse).data
+        if instance.menu_item:
+            data['menu_item'] = MenuItemSerializer(instance.menu_item).data
+        return data

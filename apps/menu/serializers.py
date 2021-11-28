@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.menu.models import MenuCategory, MenuProduct, MenuRecipe
+from apps.menu.models import MenuCategory, MenuProduct, MenuRecipe, MenuItem
 from apps.product.serializers import ProductMiniSerializer
 from apps.recipe.serializers import RecipeMiniSerializer
 
@@ -46,3 +46,18 @@ class MenuRecipeSerializer(serializers.ModelSerializer):
         if instance.recipe:
             data['recipe'] = RecipeMiniSerializer(instance.recipe).data
         return data
+
+
+class MenuItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MenuItem
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        is_product = MenuProduct.objects.filter(id=instance.id)
+        is_recipe = MenuRecipe.objects.filter(id=instance.id)
+        if len(is_product) > 0:
+            return MenuProductSerializer(is_product[0]).data
+        if len(is_recipe) > 0:
+            return MenuRecipeSerializer(is_recipe[0]).data
+        return None

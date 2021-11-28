@@ -2,9 +2,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics
 
 # Create your views here.
-from apps.operations.models import PaymentType, Purchase, PurchaseDetail, Order
+from apps.menu.models import MenuProduct, MenuRecipe
+from apps.operations.models import PaymentType, Purchase, PurchaseDetail, Order, OrderDetail
 from apps.operations.serializers import PaymentTypeSerializer, PurchaseSerializer, PurchaseDetailSerializer, \
-    OrderSerializer
+    OrderSerializer, OrderDetailSerializer
 from apps.warehouse.models import WarehouseMovement
 from apps.warehouse.serializers import WarehouseMovementSerializer
 from restaurant.permissions import DjangoModelPermissionsWithRead
@@ -174,3 +175,62 @@ class OrderRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     def perform_destroy(self, instance):
         instance.is_active = False
         instance.save()
+
+
+class OrderDetailListCreateAPIView(generics.ListCreateAPIView):
+    permission_classes = [DjangoModelPermissionsWithRead]
+    serializer_class = OrderDetailSerializer
+    filter_backends = [
+        DjangoFilterBackend
+    ]
+    filterset_fields = [
+        'header'
+    ]
+
+    def get_queryset(self):
+        return OrderDetail.objects.filter(
+            is_active=True,
+            header__restaurant__user_profiles__user=self.request.user
+        )
+
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        is_product = MenuProduct.objects.filter(id=instance.menu_item.id)
+        is_recipe = MenuRecipe.objects.filter(id=instance.menu_item.id)
+        if len(is_product) > 0:
+            movement = WarehouseMovement(
+                restaurant=instance.header.restaurant,
+                warehouse=instance.warehouse,
+                quantity=instance.quantity,
+                product=is_product[0].product
+            )
+            movement.save()
+            instance.movements.add(movement)
+            instance.save()
+        if len(is_recipe) > 0:
+            for recipe_detail in is_recipe[0].recipe.details.all():
+                movement = WarehouseMovement(
+                    restaurant=instance.header.restaurant,
+                    warehouse=instance.warehouse,
+                    quantity=instance.quantity * recipe_detail.quantity,
+                    product=recipe_detail.product
+                )
+                movement.save()
+                instance.movements.add(movement)
+                instance.save()
+
+
+class OrderDetailRetrieveDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [DjangoModelPermissionsWithRead]
+    serializer_class = OrderDetailSerializer
+
+    def get_queryset(self):
+        return OrderDetail.objects.filter(
+            is_active=True,
+            header__restaurant__user_profiles__user=self.request.user
+        )
+
+    def perform_destroy(self, instance):
+        instance.is_active = False
+        instance.save()
+        instance.movements.all().update(is_active=False)

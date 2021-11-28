@@ -7,8 +7,9 @@ from django.db.models import Sum, F
 from apps.accounts.models import Restaurant
 from apps.currency.models import Currency
 from apps.hall.models import Table
+from apps.menu.models import MenuItem
 from apps.provider.models import Provider
-from apps.warehouse.models import WarehouseMovement
+from apps.warehouse.models import WarehouseMovement, Warehouse
 
 
 class PaymentType(models.Model):
@@ -225,3 +226,52 @@ class Order(models.Model):
     class Meta:
         verbose_name = 'Pedido'
         verbose_name_plural = 'Pedidos'
+
+
+class OrderDetail(models.Model):
+    class State(models.IntegerChoices):
+        MAKING = 0, 'Preparando'
+        DELIVERED = 1, 'Entregado'
+
+    header = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name='details',
+        verbose_name='Cabecera'
+    )
+    menu_item = models.ForeignKey(
+        MenuItem,
+        on_delete=models.CASCADE,
+        related_name='order_details',
+        verbose_name='Item de Menú'
+    )
+    quantity = models.DecimalField(
+        decimal_places=2,
+        max_digits=8,
+        verbose_name='Cantidad'
+    )
+    state = models.IntegerField(
+        choices=State.choices,
+        verbose_name='Estado'
+    )
+    warehouse = models.ForeignKey(
+        Warehouse,
+        null=True,
+        related_name='order_details',
+        on_delete=models.SET_NULL,
+        verbose_name='Almacen'
+    )
+    movements = models.ManyToManyField(
+        WarehouseMovement,
+        related_name='order_details'
+    )
+    is_active = models.BooleanField(
+        default=True,
+        null=False,
+        verbose_name='Activo'
+    )
+
+    class Meta:
+        verbose_name = 'Detalle de Pedido'
+        verbose_name_plural = 'Detalles de Pedido'
+
