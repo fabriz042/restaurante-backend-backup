@@ -18,10 +18,17 @@ class ProviderSerializer(serializers.ModelSerializer):
             'address',
             'is_active'
         ]
+        extra_kwargs = {
+            'document_type': {'required': False},
+            'document': {'required': False},
+            'phone': {'required': False},
+            'address': {'required': False}
+        }
 
     def to_representation(self, instance):
         data = super(ProviderSerializer, self).to_representation(instance)
-        data['document_type'] = DocumentTypeSerializer(instance=instance.document_type).data
+        if instance.document_type:
+            data['document_type'] = DocumentTypeSerializer(instance=instance.document_type).data
         return data
 
 

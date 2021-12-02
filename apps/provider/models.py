@@ -22,26 +22,30 @@ class Provider(models.Model):
     )
     document_type = models.ForeignKey(
         DocumentType,
-        null=False,
+        null=True,
+        default=None,
         on_delete=models.RESTRICT,
         related_name='providers',
         verbose_name='Tipo de Documento'
     )
     document = models.CharField(
         max_length=25,
-        null=False,
+        null=True,
+        default=None,
         verbose_name='Documento'
     )
     phone = models.CharField(
         max_length=20,
         blank=False,
         null=True,
+        default=None,
         verbose_name='Telefóno'
     )
     address = models.CharField(
         max_length=250,
         blank=False,
         null=True,
+        default=None,
         verbose_name='Dirección'
     )
     is_active = models.BooleanField(

@@ -119,14 +119,14 @@ class Product(models.Model):
         decimal_places=2,
         max_digits=8,
         null=False,
-        default=0,
+        default=1,
         verbose_name='Peso Neto'
     )
     gross_weight = models.DecimalField(
         decimal_places=2,
         max_digits=8,
         null=False,
-        default=0,
+        default=1,
         verbose_name='Peso Bruto'
     )
     yield_percentage = models.DecimalField(
