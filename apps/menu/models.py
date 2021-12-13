@@ -4,6 +4,7 @@ from django.db import models
 from apps.accounts.models import Restaurant
 from apps.product.models import Product
 from apps.recipe.models import Recipe
+from apps.warehouse.models import Warehouse
 
 
 class MenuCategory(models.Model):
@@ -46,6 +47,13 @@ class MenuItem(models.Model):
         verbose_name='Category',
         related_name='menu_items'
     )
+    warehouse = models.ForeignKey(
+        Warehouse,
+        default=None,
+        null=True,
+        verbose_name='Almacen',
+        on_delete=models.SET_NULL
+    )
     sell_price = models.DecimalField(
         decimal_places=2,
         max_digits=10,
@@ -64,7 +72,7 @@ class MenuItem(models.Model):
 
 
 class MenuProduct(MenuItem):
-    product = models.ForeignKey(
+    product = models.OneToOneField(
         Product,
         on_delete=models.CASCADE,
         verbose_name='Producto',
@@ -77,7 +85,7 @@ class MenuProduct(MenuItem):
 
 
 class MenuRecipe(MenuItem):
-    recipe = models.ForeignKey(
+    recipe = models.OneToOneField(
         Recipe,
         on_delete=models.CASCADE,
         verbose_name='Receta',
