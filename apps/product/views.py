@@ -19,10 +19,9 @@ class ListCreateBrandAPIView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         data = serializer.validated_data
-        print(data)
-        #instance = serializer.save(
-        #    restaurant=self.request.user.profile.restaurant
-        #)
+        serializer.save(
+            restaurant=self.request.user.profile.restaurant
+        )
 
 
 class PerformUpdateDestroyBrandAPIView(generics.RetrieveUpdateDestroyAPIView):
