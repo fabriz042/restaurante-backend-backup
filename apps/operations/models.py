@@ -206,8 +206,8 @@ class Order(models.Model):
         verbose_name='Hora de Inicio'
     )
     end_datetime = models.DateTimeField(
-        null=False,
-        default=False,
+        null=True,
+        default=None,
         verbose_name='Hora de Fin'
     )
     waiter = models.ForeignKey(
