@@ -105,6 +105,7 @@ class Settings(models.Model):
 
 
 class Profile(models.Model):
+    from apps.warehouse.models import Warehouse
     user = models.OneToOneField(
         User, on_delete=models.CASCADE,
         verbose_name='Usuario'
@@ -123,6 +124,13 @@ class Profile(models.Model):
         blank=False,
         verbose_name='Restaurante',
         related_name='user_profiles'
+    )
+    default_warehouse = models.ForeignKey(
+        Warehouse,
+        on_delete=models.SET_NULL,
+        default=None,
+        null=True,
+        verbose_name='Almacen por defecto'
     )
 
     class Meta:

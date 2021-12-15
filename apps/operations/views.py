@@ -2,6 +2,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics
 
 # Create your views here.
+from rest_framework.response import Response
+
 from apps.menu.models import MenuProduct, MenuRecipe
 from apps.operations.models import PaymentType, Purchase, PurchaseDetail, Order, OrderDetail
 from apps.operations.serializers import PaymentTypeSerializer, PurchaseSerializer, PurchaseDetailSerializer, \
@@ -195,29 +197,8 @@ class OrderDetailListCreateAPIView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         instance = serializer.save()
-        is_product = MenuProduct.objects.filter(id=instance.menu_item.id)
-        is_recipe = MenuRecipe.objects.filter(id=instance.menu_item.id)
-        if len(is_product) > 0:
-            movement = WarehouseMovement(
-                restaurant=instance.header.restaurant,
-                warehouse=instance.warehouse,
-                quantity=instance.quantity,
-                product=is_product[0].product
-            )
-            movement.save()
-            instance.movements.add(movement)
-            instance.save()
-        if len(is_recipe) > 0:
-            for recipe_detail in is_recipe[0].recipe.details.all():
-                movement = WarehouseMovement(
-                    restaurant=instance.header.restaurant,
-                    warehouse=instance.warehouse,
-                    quantity=instance.quantity * recipe_detail.quantity,
-                    product=recipe_detail.product
-                )
-                movement.save()
-                instance.movements.add(movement)
-                instance.save()
+        instance.unit_price = instance.menu_item.sell_price
+        instance.save()
 
 
 class OrderDetailRetrieveDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
@@ -234,3 +215,45 @@ class OrderDetailRetrieveDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
         instance.is_active = False
         instance.save()
         instance.movements.all().update(is_active=False)
+
+
+class OrderDetailMakeMovementsAPIViews(generics.UpdateAPIView):
+    permission_classes = [DjangoModelPermissionsWithRead]
+    serializer_class = OrderDetailSerializer
+
+    def get_queryset(self):
+        return OrderDetail.objects.filter(
+            is_active=True,
+            header__restaurant__user_profiles__user=self.request.user
+        )
+
+    def put(self, request, *args, **kwargs):
+        instance = self.get_object()
+        is_product = MenuProduct.objects.filter(id=instance.menu_item.id)
+        is_recipe = MenuRecipe.objects.filter(id=instance.menu_item.id)
+        movements = []
+        if len(is_product) > 0:
+            movement = WarehouseMovement(
+                restaurant=instance.header.restaurant,
+                warehouse=instance.menu_item.warehouse,
+                quantity=instance.quantity,
+                product=is_product[0].product
+            )
+            movement.save()
+            instance.movements.add(movement)
+            instance.save()
+        if len(is_recipe) > 0:
+            for recipe_detail in is_recipe[0].recipe.details.all():
+                movement = WarehouseMovement(
+                    restaurant=instance.header.restaurant,
+                    warehouse=instance.menu_item.warehouse,
+                    quantity=instance.quantity * recipe_detail.quantity,
+                    product=recipe_detail.product
+                )
+                movement.save()
+                instance.movements.add(movement)
+                instance.save()
+                movements.append(movement)
+        return Response(WarehouseMovementSerializer(movements, many=True).data)
+
+

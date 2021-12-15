@@ -80,6 +80,8 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 class OrderDetailSerializer(serializers.ModelSerializer):
+    unit_price = serializers.DecimalField(max_digits=8, decimal_places=2, read_only=True)
+
     class Meta:
         model = OrderDetail
         fields = [
@@ -88,15 +90,15 @@ class OrderDetailSerializer(serializers.ModelSerializer):
             'menu_item',
             'quantity',
             'state',
-            'warehouse',
+            'unit_price',
             'is_active'
         ]
         read_only_fields = ('is_active', 'id')
 
     def to_representation(self, instance):
         data = super(OrderDetailSerializer, self).to_representation(instance)
-        if instance.warehouse:
-            data['warehouse'] = WarehouseSerializer(instance.warehouse).data
+        # if instance.warehouse:
+        #    data['warehouse'] = WarehouseSerializer(instance.warehouse).data
         if instance.menu_item:
             data['menu_item'] = MenuItemSerializer(instance.menu_item).data
         return data

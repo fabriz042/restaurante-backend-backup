@@ -254,12 +254,11 @@ class OrderDetail(models.Model):
         choices=State.choices,
         verbose_name='Estado'
     )
-    warehouse = models.ForeignKey(
-        Warehouse,
-        null=True,
-        related_name='order_details',
-        on_delete=models.SET_NULL,
-        verbose_name='Almacen'
+    unit_price = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        default=0,
+        verbose_name='Precio Unitario'
     )
     movements = models.ManyToManyField(
         WarehouseMovement,
