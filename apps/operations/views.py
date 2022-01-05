@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from apps.menu.models import MenuProduct, MenuRecipe
 from apps.operations.models import PaymentType, Purchase, PurchaseDetail, Order, OrderDetail
 from apps.operations.serializers import PaymentTypeSerializer, PurchaseSerializer, PurchaseDetailSerializer, \
-    OrderSerializer, OrderDetailSerializer
+    OrderSerializer, OrderDetailSerializer, OrderExtendedSerializer
 from apps.warehouse.models import WarehouseMovement
 from apps.warehouse.serializers import WarehouseMovementSerializer
 from restaurant.permissions import DjangoModelPermissionsWithRead
@@ -257,3 +257,47 @@ class OrderDetailMakeMovementsAPIViews(generics.UpdateAPIView):
         return Response(WarehouseMovementSerializer(movements, many=True).data)
 
 
+class OpenedOrderListAPIView(generics.ListAPIView):
+    permission_classes = [DjangoModelPermissionsWithRead]
+    serializer_class = OrderExtendedSerializer
+    filter_backends = [
+        DjangoFilterBackend
+    ]
+    filterset_fields = [
+        'table',
+        'waiter'
+    ]
+
+    def get_queryset(self):
+        return Order.objects.select_related(
+            'table', 'waiter'
+        ).prefetch_related('details').filter(
+            end_datetime=None,
+            is_active=True,
+            restaurant__user_profiles__user=self.request.user
+        )
+
+
+class OrderExtendedListAPIView(generics.ListAPIView):
+    permission_classes = [DjangoModelPermissionsWithRead]
+    serializer_class = OrderExtendedSerializer
+    filter_backends = [
+        DjangoFilterBackend
+    ]
+    filterset_fields = [
+        'table',
+        'waiter'
+    ]
+
+    def get_queryset(self):
+        details_state = self.request.query_params.get('details__state', None)
+        queryset = Order.objects.select_related(
+            'table', 'waiter'
+        ).filter(
+            # end_datetime=None,
+            is_active=True,
+            restaurant__user_profiles__user=self.request.user
+        )
+        if details_state:
+            queryset = queryset.filter(details__state=details_state).distinct()
+        return queryset
