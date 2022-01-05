@@ -1,9 +1,14 @@
+import datetime
+
+import pytz
+from django.conf import settings
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics
 
 # Create your views here.
 from rest_framework.response import Response
 
+from apps.hall.models import Table
 from apps.menu.models import MenuProduct, MenuRecipe
 from apps.operations.models import PaymentType, Purchase, PurchaseDetail, Order, OrderDetail
 from apps.operations.serializers import PaymentTypeSerializer, PurchaseSerializer, PurchaseDetailSerializer, \
@@ -159,7 +164,9 @@ class OrderListCreateAPIView(generics.ListCreateAPIView):
         )
 
     def perform_create(self, serializer):
-        serializer.save(restaurant=self.request.user.profile.restaurant)
+        instance = serializer.save(restaurant=self.request.user.profile.restaurant)
+        instance.table.state = Table.State.BUSSY
+        instance.table.save()
 
 
 class OrderRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
@@ -177,6 +184,13 @@ class OrderRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     def perform_destroy(self, instance):
         instance.is_active = False
         instance.save()
+
+    def perform_update(self, serializer):
+        prev_instance = self.get_object()
+        instance = serializer.save()
+        if not prev_instance.end_datetime and instance.end_datetime:
+            instance.table.state = Table.State.FREE
+            instance.table.save()
 
 
 class OrderDetailListCreateAPIView(generics.ListCreateAPIView):

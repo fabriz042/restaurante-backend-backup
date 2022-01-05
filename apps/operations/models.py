@@ -232,6 +232,7 @@ class OrderDetail(models.Model):
     class State(models.IntegerChoices):
         MAKING = 0, 'Preparando'
         DELIVERED = 1, 'Entregado'
+        QUEUED = 2, 'En Cola'
 
     header = models.ForeignKey(
         Order,
