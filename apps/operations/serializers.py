@@ -102,3 +102,20 @@ class OrderDetailSerializer(serializers.ModelSerializer):
         if instance.menu_item:
             data['menu_item'] = MenuItemSerializer(instance.menu_item).data
         return data
+
+
+class OrderExtendedSerializer(OrderSerializer):
+    details = OrderDetailSerializer(many=True)
+
+    class Meta:
+        model = Order
+        fields = [
+            'id',
+            'table',
+            'start_datetime',
+            'end_datetime',
+            'waiter',
+            'is_active',
+            'details'
+        ]
+        read_only_fields = ('is_active', 'id')
