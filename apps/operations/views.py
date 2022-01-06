@@ -313,5 +313,7 @@ class OrderExtendedListAPIView(generics.ListAPIView):
             restaurant__user_profiles__user=self.request.user
         )
         if details_state:
-            queryset = queryset.filter(details__state__in=details_state.split(',')).distinct()
+            self.details_score = details_state.split(',')
+            queryset = queryset.filter(details__state__in=details_state.split(',')).distinct().prefetch_related('details')
         return queryset
+
