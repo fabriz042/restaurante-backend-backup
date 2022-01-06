@@ -307,7 +307,7 @@ class OrderExtendedListAPIView(generics.ListAPIView):
         details_state = self.request.query_params.get('details__state', None)
         queryset = Order.objects.select_related(
             'table', 'waiter'
-        ).filter(
+        ).prefetch_related('details').filter(
             # end_datetime=None,
             is_active=True,
             restaurant__user_profiles__user=self.request.user
