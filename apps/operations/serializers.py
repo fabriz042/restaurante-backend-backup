@@ -4,7 +4,7 @@ from apps.accounts.serializers import UserSerializer
 from apps.currency.serializers import CurrencySerializer
 from apps.hall.serializers import TableSerializer
 from apps.menu.serializers import MenuItemSerializer
-from apps.operations.models import PaymentType, Purchase, PurchaseDetail, Order, OrderDetail
+from apps.operations.models import PaymentType, Purchase, PurchaseDetail, Order, OrderDetail, PaymentDocument
 from apps.product.serializers import ProductSerializer
 from apps.provider.serializers import ProviderSerializer
 from apps.warehouse.models import WarehouseMovement
@@ -22,7 +22,7 @@ class PurchaseSerializer(serializers.ModelSerializer):
         model = Purchase
         fields = [
             'id', 'currency', 'sub_total', 'serie', 'correlative',
-            'payment_type', 'issue_date', 'igv', 'is_active', 'provider'
+            'payment_type', 'issue_date', 'igv', 'is_active', 'provider', 'payment_document'
         ]
         read_only_fields = ('is_active', 'id')
 
@@ -34,6 +34,8 @@ class PurchaseSerializer(serializers.ModelSerializer):
             data['payment_type'] = PaymentTypeSerializer(instance.payment_type).data
         if instance.provider:
             data['provider'] = ProviderSerializer(instance.provider).data
+        if instance.payment_document:
+            data['payment_document'] = PaymentDocumentSerializer(instance.payment_document).data
         data['total'] = instance.operation_value
         data['paid'] = instance.paid
         data['debt'] = instance.debt
@@ -117,5 +119,14 @@ class OrderExtendedSerializer(OrderSerializer):
             'waiter',
             'is_active',
             'details'
+        ]
+        read_only_fields = ('is_active', 'id')
+
+
+class PaymentDocumentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PaymentDocument
+        fields = [
+            'id', 'name', 'is_active'
         ]
         read_only_fields = ('is_active', 'id')

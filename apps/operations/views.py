@@ -1,18 +1,23 @@
 import datetime
+from io import StringIO, BytesIO
 
 import pytz
 from django.conf import settings
+from django.http import HttpResponse
+from django.template.loader import render_to_string
 from django_filters.rest_framework import DjangoFilterBackend
+from django_xhtml2pdf.utils import generate_pdf
 from rest_framework import generics
 
 # Create your views here.
 from rest_framework.response import Response
+from xhtml2pdf import pisa
 
 from apps.hall.models import Table
 from apps.menu.models import MenuProduct, MenuRecipe
-from apps.operations.models import PaymentType, Purchase, PurchaseDetail, Order, OrderDetail
+from apps.operations.models import PaymentType, Purchase, PurchaseDetail, Order, OrderDetail, PaymentDocument
 from apps.operations.serializers import PaymentTypeSerializer, PurchaseSerializer, PurchaseDetailSerializer, \
-    OrderSerializer, OrderDetailSerializer, OrderExtendedSerializer
+    OrderSerializer, OrderDetailSerializer, OrderExtendedSerializer, PaymentDocumentSerializer
 from apps.warehouse.models import WarehouseMovement
 from apps.warehouse.serializers import WarehouseMovementSerializer
 from restaurant.permissions import DjangoModelPermissionsWithRead
@@ -61,7 +66,7 @@ class PurchaseListCreateAPIView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         return Purchase.objects.select_related(
-            'payment_type', 'currency', 'provider'
+            'payment_type', 'currency', 'provider', 'payment_document'
         ).filter(
             is_active=True,
             restaurant__user_profiles__user=self.request.user
@@ -314,6 +319,60 @@ class OrderExtendedListAPIView(generics.ListAPIView):
         )
         if details_state:
             self.details_score = details_state.split(',')
-            queryset = queryset.filter(details__state__in=details_state.split(',')).distinct().prefetch_related('details')
+            queryset = queryset.filter(details__state__in=details_state.split(',')).distinct().prefetch_related(
+                'details')
         return queryset
 
+
+class PurchaseTicketAPIView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [DjangoModelPermissionsWithRead]
+    queryset = Purchase.objects.filter(is_active=True)
+
+    def get(self, request, *args, **kwargs):
+        purchase = self.get_object()
+        print(purchase.details.filter(is_active=True))
+        html = render_to_string('ticket_purchase.html', {
+            'purchase': purchase,
+            'details': purchase.details.filter(is_active=True)
+        })
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename=Comprobante_{}-{}.pdf'.format(
+            purchase.serie,
+            str(purchase.correlative)
+        )
+        result = BytesIO()
+        pdf = pisa.pisaDocument(BytesIO(html.encode("utf-8")), result)
+        if not pdf.err:
+            return HttpResponse(result.getvalue(), content_type='application/pdf')
+        return None
+
+
+class PaymentDocumentListCreateAPIView(generics.ListCreateAPIView):
+    serializer_class = PaymentDocumentSerializer
+    permission_classes = [DjangoModelPermissionsWithRead]
+
+    def get_queryset(self):
+        return PaymentDocument.objects.filter(
+            is_active=True,
+            restaurant__user_profiles__user=self.request.user
+        )
+
+    def perform_create(self, serializer):
+        serializer.save(
+            restaurant=self.request.user.profile.restaurant
+        )
+
+
+class PaymentDocumentRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = PaymentDocumentSerializer
+    permission_classes = [DjangoModelPermissionsWithRead]
+
+    def get_queryset(self):
+        return PaymentDocument.objects.filter(
+            is_active=True,
+            restaurant__user_profiles__user=self.request.user
+        )
+
+    def perform_destroy(self, instance):
+        instance.is_active = False
+        instance.save()

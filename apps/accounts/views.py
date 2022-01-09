@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from apps.accounts.models import Restaurant, Profile, Role
 from apps.accounts.serializers import UserSerializer, PermissionSerializer, ProfileSerializer, \
-    RoleSerializer
+    RoleSerializer, RestaurantSerializer, RestaurantPictureSerializer
 from restaurant.permissions import DjangoModelPermissionsWithRead
 
 
@@ -111,3 +111,21 @@ class ListPermissionAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         return Permission.objects.all()
+
+
+class RestaurantRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
+    permission_classes = [DjangoModelPermissionsWithRead]
+    serializer_class = RestaurantSerializer
+    queryset = Restaurant.objects.all()
+
+    def get_object(self):
+        return self.request.user.profile.restaurant
+
+
+class RestaurantPictureRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
+    permission_classes = [DjangoModelPermissionsWithRead]
+    serializer_class = RestaurantPictureSerializer
+    queryset = Restaurant.objects.all()
+
+    def get_object(self):
+        return self.request.user.profile.restaurant

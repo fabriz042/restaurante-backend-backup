@@ -130,24 +130,24 @@ class ProductTabularInline(admin.TabularInline):
 class RestaurantAdmin(admin.ModelAdmin):
     """PartyCompanyAdmin Class"""
     inlines = [
-        ProfileTabularInline,
-        SettingsStackedInLine,
-        RoleTabularInline,
-        DocumentTypeTabularInline,
-        ProviderTabularInline,
-        BrandTabularInline,
-        ProductCategoryTabularInline,
-        MeasurementUnitTabularInline,
-        ProductTabularInline,
-        CurrencyTabularInline,
-        PrizingTableTabularInline,
-        WarehouseTabularInline,
-        WarehouseMovementTabularInLine,
-        PaymentTypeTabularInLine,
-        PurchaseTabularInLine,
-        RecipeTabularInLine,
-        HallTabularInLine,
-        MenuCategoryTabularInLine
+        # ProfileTabularInline,
+        # SettingsStackedInLine,
+        # RoleTabularInline,
+        # DocumentTypeTabularInline,
+        # ProviderTabularInline,
+        # BrandTabularInline,
+        # ProductCategoryTabularInline,
+        # MeasurementUnitTabularInline,
+        # ProductTabularInline,
+        # CurrencyTabularInline,
+        # PrizingTableTabularInline,
+        # WarehouseTabularInline,
+        # WarehouseMovementTabularInLine,
+        # PaymentTypeTabularInLine,
+        # PurchaseTabularInLine,
+        # RecipeTabularInLine,
+        # HallTabularInLine,
+        # MenuCategoryTabularInLine
     ]
     list_display = [
         'id',

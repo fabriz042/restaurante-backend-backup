@@ -41,8 +41,7 @@ class Restaurant(models.Model):
         verbose_name='Figura'
     )
     # choice
-    state = models.CharField(
-        max_length=10,
+    state = models.IntegerField(
         default=States.ACTIVE,
         choices=States.choices,
         blank=True,

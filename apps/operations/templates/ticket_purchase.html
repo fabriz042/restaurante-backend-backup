@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="utf-8">
+        <title>Reporte PDF</title>
+        <style>
+        @page {
+            size: 8cm 20cm ;
+            margin: 0.5cm 0.5cm 0.5cm 0.5cm;
+        }
+        p, h1, h2, td {
+            line-height: 15px;
+            padding: 0px;
+            margin: 0px;
+        }
+        table td {
+            padding-top: 3px;
+        }
+        .thead {
+            border-bottom-color: black;
+            border-bottom-style: solid;
+            border-bottom-width: 1px;
+            border-top-color: black;
+            border-top-style: solid;
+            border-top-width: 1px;
+        }
+         .tfooter {
+            border-top-color: black;
+            border-top-style: solid;
+            border-top-width: 1px;
+        }
+        .align {
+            text-align: left;
+        }
+        .image {
+             height: 64px;
+             width: auto;
+        }
+        </style>
+    </head>
+    <body>
+    <main class="container">
+        <center>
+            <div>
+            <img class="image" src="{{ purchase.restaurant.picture.path }}" >
+            </div>
+            <h1 style="padding-top:8px">{{ purchase.restaurant.name }}</h1>
+            <p><b>RUC:</b> {{ purchase.restaurant.ruc }}</p>
+            <p>{{purchase.restaurant.address}}</p>
+            <p><b>Cel:</b> {{purchase.restaurant.phone}}</p>
+            <h2>{{ purchase.payment_document|title }} - {{ purchase.payment_type.name }}</h2>
+            <p>{{ purchase.serie }}-{{ purchase.correlative|stringformat:"08d" }}</p>
+            <p style="line-height: 0px;"></p>
+            <div class="align">
+                <p><b>Proveedor:</b> {{ purchase.provider.name }}</p>
+                <p><b>Dirección:</b> {{ purchase.provider.address }}</p>
+                <p><b>RUC/DNI:</b> {{ purchase.provider.document }}</p>
+                <p><b>Fech. Emisión:</b> {{ purchase.issue_date|date:"d/m/Y" }}</p>
+                <p><b>Compra:</b> {{ purchase.payment_type.name| title }}</p>
+            </div>
+            <br>
+            <table>
+                <thead>
+                <tr class="thead">
+                    <td>Item</td>
+                    <td>Cant</td>
+                    <td>P. Unit</td>
+                    <td>P. Total</td>
+                </tr>
+                </thead>
+                <tbody>
+                {% for detail in details %}
+                <tr>
+                    <td>{{ detail.movement.product.name }}</td>
+                    <td>{{ detail.quantity_abs }}</td>
+                    <td>{{ detail.unitary_value|floatformat:2 }}</td>
+                    <td>{{ detail.subtotal|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+
+                <tr class="tfooter">
+                    <td></td>
+                    <td colspan="2"><b>SUB TOTAL</b></td>
+                    <td>{{ purchase.sub_total_|floatformat:2  }}</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td colspan="2"><b>IGV</b></td>
+                    <td>{{ purchase.igv_|floatformat:2  }}</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td colspan="2" class="tfooter"><b>TOTAL</b></td>
+                    <td  class="tfooter">{{ purchase.operation_value|floatformat:2  }}</td>
+                </tr>
+                </tbody>
+            </table>
+            <p>SON {{ purchase.operation_value_as_letters|upper }} {{ purchase.currency.name|upper }}</p>
+
+            <small>NO SE ACEPTAN CAMBIOS NI DEVOLUCIONES</small>
+        </center>
+    </main>
+    </body>
+</html>

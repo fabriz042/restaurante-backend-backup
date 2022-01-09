@@ -10,6 +10,7 @@ from apps.hall.models import Table
 from apps.menu.models import MenuItem
 from apps.provider.models import Provider
 from apps.warehouse.models import WarehouseMovement, Warehouse
+from utils import number_to_letters
 
 
 class PaymentType(models.Model):
@@ -35,6 +36,32 @@ class PaymentType(models.Model):
     class Meta:
         verbose_name = "Tipo de Pago"
         verbose_name_plural = "Tipos de Pago"
+
+
+class PaymentDocument(models.Model):
+    restaurant = models.ForeignKey(
+        Restaurant,
+        on_delete=models.CASCADE,
+        related_name='payment_documents',
+        null=False,
+        verbose_name='Restaurante'
+    )
+    name = models.CharField(
+        max_length=200,
+        verbose_name='Nombre'
+    )
+    is_active = models.BooleanField(
+        null=False,
+        default=True,
+        verbose_name="Activo"
+    )
+
+    class Meta:
+        verbose_name = "Documento de Pago"
+        verbose_name_plural = "Documento de Pago"
+
+    def __str__(self):
+        return self.name
 
 
 class Operation(models.Model):
@@ -76,6 +103,13 @@ class Operation(models.Model):
         on_delete=models.SET_NULL,
         verbose_name='Tipo de Pago'
     )
+    payment_document = models.ForeignKey(
+        PaymentDocument,
+        null=True,
+        on_delete=models.SET_NULL,
+        default=None,
+        verbose_name='Documento de Pago'
+    )
     issue_date = models.DateField(
         null=False,
         verbose_name='Fecha'
@@ -116,6 +150,22 @@ class Purchase(Operation):
         verbose_name_plural = 'Compras'
 
     @property
+    def sub_total_(self):
+        mount = self.details.all().aggregate(
+            subtotal_total=Sum('subtotal')
+        )
+        subtotal = mount['subtotal_total'] if mount['subtotal_total'] else 0
+        return subtotal
+
+    @property
+    def igv_(self):
+        mount = self.details.all().aggregate(
+            igv_total=Sum('igv')
+        )
+        igv = mount['igv_total'] if mount['igv_total'] else 0
+        return igv
+
+    @property
     def operation_value(self):
         mount = self.details.all().aggregate(
             subtotal_total=Sum('subtotal'), igv_total=Sum('igv')
@@ -123,6 +173,10 @@ class Purchase(Operation):
         subtotal = mount['subtotal_total'] if mount['subtotal_total'] else 0
         igv = mount['igv_total'] if mount['igv_total'] else 0
         return subtotal + igv
+
+    @property
+    def operation_value_as_letters(self):
+        return number_to_letters(self.operation_value)
 
     @property
     def paid(self):
@@ -177,6 +231,10 @@ class OperationsDetail(models.Model):
         null=False,
         verbose_name='Activo'
     )
+
+    @property
+    def quantity_abs(self):
+        return abs(self.movement.quantity)
 
     class Meta:
         verbose_name = 'Detalle de Operacion'
@@ -274,4 +332,3 @@ class OrderDetail(models.Model):
     class Meta:
         verbose_name = 'Detalle de Pedido'
         verbose_name_plural = 'Detalles de Pedido'
-

@@ -3,7 +3,7 @@ from django.contrib.auth.models import User, Permission, Group
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
 
-from apps.accounts.models import Profile, Role
+from apps.accounts.models import Profile, Role, Restaurant
 
 
 class RoleMiniSerializer(serializers.ModelSerializer):
@@ -62,7 +62,6 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class RoleSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Role
         fields = ['id', 'role_name', 'permissions']
@@ -71,3 +70,16 @@ class RoleSerializer(serializers.ModelSerializer):
         data = super(RoleSerializer, self).to_representation(instance)
         data['permissions'] = PermissionSerializer(instance.permissions, many=True).data
         return data
+
+
+class RestaurantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Restaurant
+        fields = ['id', 'name', 'address', 'ruc', 'picture', 'email', 'business_name', 'phone']
+        read_only_fields = ('picture', 'id')
+
+
+class RestaurantPictureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Restaurant
+        fields = ['picture']
