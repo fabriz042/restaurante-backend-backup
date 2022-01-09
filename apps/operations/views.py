@@ -376,3 +376,25 @@ class PaymentDocumentRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroy
     def perform_destroy(self, instance):
         instance.is_active = False
         instance.save()
+
+
+class OrderTicketAPIView(generics.RetrieveUpdateDestroyAPIView):
+    # permission_classes = [DjangoModelPermissionsWithRead]
+    queryset = Order.objects.filter(is_active=True)
+
+    def get(self, request, *args, **kwargs):
+        order = self.get_object()
+        html = render_to_string('ticket_order.html', {
+            'order': order,
+            'details': order.details.filter(is_active=True)
+        })
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename=Comprobante_{}-{}.pdf'.format(
+            order.serie,
+            str(order.correlative)
+        )
+        result = BytesIO()
+        pdf = pisa.pisaDocument(BytesIO(html.encode("utf-8")), result)
+        if not pdf.err:
+            return HttpResponse(result.getvalue(), content_type='application/pdf')
+        return None

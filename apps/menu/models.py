@@ -66,6 +66,16 @@ class MenuItem(models.Model):
         verbose_name='Activo'
     )
 
+    @property
+    def menu_item_name(self):
+        menu_products = MenuProduct.objects.filter(id=self.id)
+        if len(menu_products) > 0:
+            return menu_products[0].product.name
+        menu_recipes = MenuRecipe.objects.filter(id=self.id)
+        if len(menu_recipes) > 0:
+            return menu_recipes[0].recipe.name
+        return None
+
     class Meta:
         verbose_name = 'Item de Menú'
         verbose_name_plural = 'Item de Menú'

@@ -68,6 +68,11 @@ class OrderSerializer(serializers.ModelSerializer):
             'start_datetime',
             'end_datetime',
             'waiter',
+            'currency',
+            'serie',
+            'correlative',
+            'payment_type',
+            'payment_document',
             'is_active'
         ]
         read_only_fields = ('is_active', 'id')
@@ -78,6 +83,12 @@ class OrderSerializer(serializers.ModelSerializer):
             data['table'] = TableSerializer(instance.table).data
         if instance.waiter:
             data['waiter'] = UserSerializer(instance.waiter).data
+        if instance.currency:
+            data['currency'] = CurrencySerializer(instance.currency).data
+        if instance.payment_type:
+            data['payment_type'] = PaymentTypeSerializer(instance.payment_type).data
+        if instance.payment_document:
+            data['payment_document'] = PaymentDocumentSerializer(instance.payment_document).data
         return data
 
 

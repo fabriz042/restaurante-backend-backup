@@ -1,7 +1,7 @@
 from django.urls import path, include
 
 from apps.operations.views import OrderListCreateAPIView, OrderRetrieveUpdateDestroyAPIView, OpenedOrderListAPIView, \
-    OrderExtendedListAPIView
+    OrderExtendedListAPIView, OrderTicketAPIView
 
 urlpatterns = [
     path('', OrderListCreateAPIView.as_view()),
@@ -9,4 +9,5 @@ urlpatterns = [
     path('opened/', OpenedOrderListAPIView.as_view()),
     path('extended/', OrderExtendedListAPIView.as_view()),
     path('detail/', include('apps.operations.urls.order_detail')),
+    path('ticket/<pk>', OrderTicketAPIView.as_view())
 ]

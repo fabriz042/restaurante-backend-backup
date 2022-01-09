@@ -151,7 +151,7 @@ class Purchase(Operation):
 
     @property
     def sub_total_(self):
-        mount = self.details.all().aggregate(
+        mount = self.details.filter(is_active=True).aggregate(
             subtotal_total=Sum('subtotal')
         )
         subtotal = mount['subtotal_total'] if mount['subtotal_total'] else 0
@@ -159,7 +159,7 @@ class Purchase(Operation):
 
     @property
     def igv_(self):
-        mount = self.details.all().aggregate(
+        mount = self.details.filter(is_active=True).aggregate(
             igv_total=Sum('igv')
         )
         igv = mount['igv_total'] if mount['igv_total'] else 0
@@ -167,7 +167,7 @@ class Purchase(Operation):
 
     @property
     def operation_value(self):
-        mount = self.details.all().aggregate(
+        mount = self.details.filter(is_active=True).aggregate(
             subtotal_total=Sum('subtotal'), igv_total=Sum('igv')
         )
         subtotal = mount['subtotal_total'] if mount['subtotal_total'] else 0
@@ -275,6 +275,40 @@ class Order(models.Model):
         verbose_name='Mesero',
         related_name='orders'
     )
+    currency = models.ForeignKey(
+        Currency,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='orders',
+        default=None,
+        verbose_name='Tipo de moneda'
+    )
+    serie = models.CharField(
+        max_length=10,
+        null=True,
+        blank=True,
+        default=None,
+        verbose_name='Serie'
+    )
+    correlative = models.IntegerField(
+        default=0,
+        null=True,
+        verbose_name='Correlativo'
+    )
+    payment_type = models.ForeignKey(
+        PaymentType,
+        null=True,
+        default=None,
+        on_delete=models.SET_NULL,
+        verbose_name='Tipo de Pago'
+    )
+    payment_document = models.ForeignKey(
+        PaymentDocument,
+        null=True,
+        on_delete=models.SET_NULL,
+        default=None,
+        verbose_name='Documento de Pago'
+    )
     is_active = models.BooleanField(
         default=True,
         null=False,
@@ -284,6 +318,24 @@ class Order(models.Model):
     class Meta:
         verbose_name = 'Pedido'
         verbose_name_plural = 'Pedidos'
+
+    @property
+    def sub_total(self):
+        mount = self.details.filter(is_active=True).aggregate(
+            total=Sum(F('quantity') * F('unit_price'))
+        )
+        subtotal = mount['total'] if mount['total'] else 0
+        return subtotal
+
+    @property
+    def igv(self):
+        return float(self.sub_total) * 0.18
+
+    def total(self):
+        return float(self.sub_total) + self.igv
+
+    def total_as_letters(self):
+        return number_to_letters(self.total())
 
 
 class OrderDetail(models.Model):
@@ -332,3 +384,7 @@ class OrderDetail(models.Model):
     class Meta:
         verbose_name = 'Detalle de Pedido'
         verbose_name_plural = 'Detalles de Pedido'
+
+    @property
+    def sub_total(self):
+        return self.quantity * self.unit_price
