@@ -65,8 +65,10 @@
                 <thead>
                 <tr class="thead">
                     <td>Item</td>
-                    <td>Cant</td>
+                    <td>P. Neto</td>
+                    <td>IGV</td>
                     <td>P. Unit</td>
+                    <td>Cant</td>
                     <td>P. Total</td>
                 </tr>
                 </thead>
@@ -74,25 +76,27 @@
                 {% for detail in details %}
                 <tr>
                     <td>{{ detail.menu_item.menu_item_name }}</td>
-                    <td>{{ detail.quantity }}</td>
+                    <td>{{ detail.prize_net|floatformat:2 }}</td>
+                    <td>{{ detail.igv|floatformat:2 }}</td>
                     <td>{{ detail.unit_price|floatformat:2 }}</td>
+                    <td>{{ detail.quantity }}</td>
                     <td>{{ detail.sub_total|floatformat:2 }}</td>
                 </tr>
                 {% endfor %}
 
                 <tr class="tfooter">
                     <td></td>
-                    <td colspan="2"><b>SUB TOTAL</b></td>
+                    <td colspan="4"><b>SUB TOTAL</b></td>
                     <td>{{ order.sub_total|floatformat:2  }}</td>
                 </tr>
                 <tr>
                     <td></td>
-                    <td colspan="2"><b>IGV</b></td>
+                    <td colspan="4"><b>IGV</b></td>
                     <td>{{ order.igv|floatformat:2  }}</td>
                 </tr>
                 <tr>
                     <td></td>
-                    <td colspan="2" class="tfooter"><b>TOTAL</b></td>
+                    <td colspan="4" class="tfooter"><b>TOTAL</b></td>
                     <td  class="tfooter">{{ order.total|floatformat:2  }}</td>
                 </tr>
                 </tbody>

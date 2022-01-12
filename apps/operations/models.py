@@ -320,7 +320,7 @@ class Order(models.Model):
         verbose_name_plural = 'Pedidos'
 
     @property
-    def sub_total(self):
+    def total(self):
         mount = self.details.filter(is_active=True).aggregate(
             total=Sum(F('quantity') * F('unit_price'))
         )
@@ -329,13 +329,14 @@ class Order(models.Model):
 
     @property
     def igv(self):
-        return float(self.sub_total) * 0.18
+        return float(self.total) - self.sub_total
 
-    def total(self):
-        return float(self.sub_total) + self.igv
+    @property
+    def sub_total(self):
+        return float(self.total) / 1.18
 
     def total_as_letters(self):
-        return number_to_letters(self.total())
+        return number_to_letters(self.total)
 
 
 class OrderDetail(models.Model):
@@ -388,6 +389,14 @@ class OrderDetail(models.Model):
     @property
     def sub_total(self):
         return self.quantity * self.unit_price
+
+    @property
+    def prize_net(self):
+        return float(self.unit_price)/1.18
+
+    @property
+    def igv(self):
+        return float(self.unit_price) - self.prize_net
 
 
 class Serie(models.Model):
