@@ -411,6 +411,12 @@ class OrderTicketAPIView(generics.RetrieveUpdateDestroyAPIView):
 class SerieListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = SerieSerializer
     permission_classes = [DjangoModelPermissionsWithRead]
+    filter_backends = [
+        DjangoFilterBackend
+    ]
+    filterset_fields = [
+        'payment_document'
+    ]
 
     def get_queryset(self):
         return Serie.objects.filter(
