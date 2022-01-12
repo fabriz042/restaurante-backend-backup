@@ -15,9 +15,9 @@ from xhtml2pdf import pisa
 
 from apps.hall.models import Table
 from apps.menu.models import MenuProduct, MenuRecipe
-from apps.operations.models import PaymentType, Purchase, PurchaseDetail, Order, OrderDetail, PaymentDocument
+from apps.operations.models import PaymentType, Purchase, PurchaseDetail, Order, OrderDetail, PaymentDocument, Serie
 from apps.operations.serializers import PaymentTypeSerializer, PurchaseSerializer, PurchaseDetailSerializer, \
-    OrderSerializer, OrderDetailSerializer, OrderExtendedSerializer, PaymentDocumentSerializer
+    OrderSerializer, OrderDetailSerializer, OrderExtendedSerializer, PaymentDocumentSerializer, SerieSerializer
 from apps.warehouse.models import WarehouseMovement
 from apps.warehouse.serializers import WarehouseMovementSerializer
 from restaurant.permissions import DjangoModelPermissionsWithRead
@@ -172,6 +172,13 @@ class OrderListCreateAPIView(generics.ListCreateAPIView):
         instance = serializer.save(restaurant=self.request.user.profile.restaurant)
         instance.table.state = Table.State.BUSSY
         instance.table.save()
+        series = Serie.objects.filter(
+            restaurant=instance.restaurant,
+            code=instance.serie
+        )
+        for serie in series:
+            serie.correlative += 1
+            serie.save()
 
 
 class OrderRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
@@ -189,6 +196,8 @@ class OrderRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     def perform_destroy(self, instance):
         instance.is_active = False
         instance.save()
+        instance.table.state = Table.State.FREE
+        instance.table.save()
 
     def perform_update(self, serializer):
         prev_instance = self.get_object()
@@ -330,7 +339,6 @@ class PurchaseTicketAPIView(generics.RetrieveUpdateDestroyAPIView):
 
     def get(self, request, *args, **kwargs):
         purchase = self.get_object()
-        print(purchase.details.filter(is_active=True))
         html = render_to_string('ticket_purchase.html', {
             'purchase': purchase,
             'details': purchase.details.filter(is_active=True)
@@ -398,3 +406,34 @@ class OrderTicketAPIView(generics.RetrieveUpdateDestroyAPIView):
         if not pdf.err:
             return HttpResponse(result.getvalue(), content_type='application/pdf')
         return None
+
+
+class SerieListCreateAPIView(generics.ListCreateAPIView):
+    serializer_class = SerieSerializer
+    permission_classes = [DjangoModelPermissionsWithRead]
+
+    def get_queryset(self):
+        return Serie.objects.filter(
+            is_active=True,
+            restaurant__user_profiles__user=self.request.user
+        )
+
+    def perform_create(self, serializer):
+        serializer.save(
+            restaurant=self.request.user.profile.restaurant
+        )
+
+
+class SerieRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = SerieSerializer
+    permission_classes = [DjangoModelPermissionsWithRead]
+
+    def get_queryset(self):
+        return Serie.objects.filter(
+            is_active=True,
+            restaurant__user_profiles__user=self.request.user
+        )
+
+    def perform_destroy(self, instance):
+        instance.is_active = False
+        instance.save()

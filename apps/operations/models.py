@@ -388,3 +388,37 @@ class OrderDetail(models.Model):
     @property
     def sub_total(self):
         return self.quantity * self.unit_price
+
+
+class Serie(models.Model):
+    restaurant = models.ForeignKey(
+        Restaurant,
+        on_delete=models.CASCADE,
+        related_name='series',
+        null=False,
+        verbose_name='Restaurante'
+    )
+    code = models.CharField(
+        max_length=10,
+        verbose_name='Código'
+    )
+    correlative = models.IntegerField(
+        default=1,
+        verbose_name='Correlativo'
+    )
+    payment_document = models.ForeignKey(
+        PaymentDocument,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name='Documento de Pago',
+        related_name='series'
+    )
+    is_active = models.BooleanField(
+        default=True,
+        null=False,
+        verbose_name='Activo'
+    )
+
+    class Meta:
+        verbose_name = 'Serie'
+        verbose_name_plural = 'Series'

@@ -4,7 +4,7 @@ from apps.accounts.serializers import UserSerializer
 from apps.currency.serializers import CurrencySerializer
 from apps.hall.serializers import TableSerializer
 from apps.menu.serializers import MenuItemSerializer
-from apps.operations.models import PaymentType, Purchase, PurchaseDetail, Order, OrderDetail, PaymentDocument
+from apps.operations.models import PaymentType, Purchase, PurchaseDetail, Order, OrderDetail, PaymentDocument, Serie
 from apps.product.serializers import ProductSerializer
 from apps.provider.serializers import ProviderSerializer
 from apps.warehouse.models import WarehouseMovement
@@ -141,3 +141,18 @@ class PaymentDocumentSerializer(serializers.ModelSerializer):
             'id', 'name', 'is_active'
         ]
         read_only_fields = ('is_active', 'id')
+
+
+class SerieSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Serie
+        fields = [
+            'id', 'code', 'correlative', 'payment_document', 'is_active'
+        ]
+        read_only_fields = ('is_active', 'id')
+
+    def to_representation(self, instance):
+        data = super(SerieSerializer, self).to_representation(instance)
+        if instance.payment_document:
+            data['payment_document'] = PaymentDocumentSerializer(instance.payment_document).data
+        return data
