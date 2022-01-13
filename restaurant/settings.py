@@ -54,7 +54,8 @@ INSTALLED_APPS = [
     'apps.recipe',
     'apps.hall',
     'apps.menu',
-    'apps.bill'
+    'apps.bill',
+    'apps.client'
 ]
 
 MIDDLEWARE = [

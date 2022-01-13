@@ -4,6 +4,7 @@ from rest_framework import generics
 
 # Create your views here.
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from apps.accounts.models import Restaurant, Profile, Role
 from apps.accounts.serializers import UserSerializer, PermissionSerializer, ProfileSerializer, \
@@ -39,6 +40,11 @@ class ListUserAuthPermissionsAPIView(generics.ListAPIView):
         user_permissions = self.request.user.user_permissions.all()
         group_permissions = Permission.objects.filter(group__user=self.request.user)
         return user_permissions | group_permissions
+
+    def list(self, request, *args, **kwargs):
+        return Response(
+            data=self.get_queryset().values_list('codename', flat=True)
+        )
 
 
 class RetrieveUpdateUserAuthAPIView(generics.RetrieveUpdateAPIView):
