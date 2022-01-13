@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from apps.accounts.serializers import UserSerializer
+from apps.client.serializers import ClientSerializer
 from apps.currency.serializers import CurrencySerializer
 from apps.hall.serializers import TableSerializer
 from apps.menu.serializers import MenuItemSerializer
@@ -73,6 +74,7 @@ class OrderSerializer(serializers.ModelSerializer):
             'correlative',
             'payment_type',
             'payment_document',
+            'client',
             'is_active'
         ]
         read_only_fields = ('is_active', 'id')
@@ -89,6 +91,8 @@ class OrderSerializer(serializers.ModelSerializer):
             data['payment_type'] = PaymentTypeSerializer(instance.payment_type).data
         if instance.payment_document:
             data['payment_document'] = PaymentDocumentSerializer(instance.payment_document).data
+        if instance.client:
+            data['client'] = ClientSerializer(instance.client).data
         return data
 
 

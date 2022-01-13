@@ -5,6 +5,7 @@ from django.db import models
 from django.db.models import Sum, F
 
 from apps.accounts.models import Restaurant
+from apps.client.models import Client
 from apps.currency.models import Currency
 from apps.hall.models import Table
 from apps.menu.models import MenuItem
@@ -313,6 +314,13 @@ class Order(models.Model):
         default=True,
         null=False,
         verbose_name='Activo'
+    )
+    client = models.ForeignKey(
+        Client,
+        on_delete=models.CASCADE,
+        null=True,
+        default=None,
+        verbose_name='Cliente'
     )
 
     class Meta:

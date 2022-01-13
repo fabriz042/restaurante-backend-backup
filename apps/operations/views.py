@@ -157,7 +157,8 @@ class OrderListCreateAPIView(generics.ListCreateAPIView):
     ]
     filterset_fields = [
         'table',
-        'waiter'
+        'waiter',
+        'client'
     ]
 
     def get_queryset(self):
