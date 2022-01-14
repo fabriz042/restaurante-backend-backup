@@ -8,5 +8,15 @@ class BillingSettingSerializer(serializers.ModelSerializer):
         model = BillingSetting
         fields = [
             'id', 'user_sol', 'password_sol', 'sunat_name',
-            'location_code', 'second_user', 'second_user_password'
+            'location_code', 'second_user', 'second_user_password',
+            'sunat_certificate'
+        ]
+        read_only_fields = ('sunat_certificate', 'id')
+
+
+class BillSettingsCertificateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BillingSetting
+        fields = [
+            'id', 'sunat_certificate', 'password_certificate'
         ]
