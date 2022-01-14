@@ -9,9 +9,9 @@ class BillingSettingSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'user_sol', 'password_sol', 'sunat_name',
             'location_code', 'second_user', 'second_user_password',
-            'sunat_certificate'
+            'sunat_certificate', 'password_certificate'
         ]
-        read_only_fields = ('sunat_certificate', 'id')
+        read_only_fields = ('sunat_certificate', 'id', 'password_certificate')
 
 
 class BillSettingsCertificateSerializer(serializers.ModelSerializer):
