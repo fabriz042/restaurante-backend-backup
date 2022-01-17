@@ -122,7 +122,7 @@ class OrderDetailSerializer(serializers.ModelSerializer):
 
 
 class OrderExtendedSerializer(OrderSerializer):
-    details = OrderDetailSerializer(many=True)
+    details = OrderDetailSerializer(many=True, source='details_active')
 
     class Meta:
         model = Order
