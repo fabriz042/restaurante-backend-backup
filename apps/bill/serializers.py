@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.bill.models import BillingSetting
+from apps.bill.models import BillingSetting, BillOrder
 
 
 class BillingSettingSerializer(serializers.ModelSerializer):
@@ -20,3 +20,9 @@ class BillSettingsCertificateSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'sunat_certificate', 'password_certificate'
         ]
+
+
+class BillOrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BillOrder
+        fields = '__all__'

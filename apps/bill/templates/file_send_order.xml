@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://service.sunat.gob.pe" xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+ <soapenv:Header>
+  <wsse:Security>
+   <wsse:UsernameToken>
+    <wsse:Username>{{ bill.order.restaurant.ruc }}{{ settings.second_user }}</wsse:Username>
+    <wsse:Password>{{ settings.second_user_password }}</wsse:Password>
+   </wsse:UsernameToken>
+  </wsse:Security>
+ </soapenv:Header>
+ <soapenv:Body>
+  <ser:sendBill>
+   <fileName>{{ bill.filename }}.zip</fileName>
+   <contentFile>{{ base64 }}</contentFile>
+  </ser:sendBill>
+ </soapenv:Body>
+</soapenv:Envelope>

@@ -346,6 +346,10 @@ class Order(models.Model):
     def total_as_letters(self):
         return number_to_letters(self.total)
 
+    @property
+    def details_active(self):
+        return self.details.filter(is_active=True)
+
 
 class OrderDetail(models.Model):
     class State(models.IntegerChoices):
@@ -405,6 +409,14 @@ class OrderDetail(models.Model):
     @property
     def igv(self):
         return float(self.unit_price) - self.prize_net
+
+    @property
+    def total_no_tax(self):
+        return float(self.prize_net) * float(self.quantity)
+
+    @property
+    def igv_total(self):
+        return self.igv * float(self.quantity)
 
 
 class Serie(models.Model):
