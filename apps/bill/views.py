@@ -13,7 +13,8 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from zeep import Client, Transport
+from zeep import Client
+from zeep.transports import Transport
 
 from apps.bill.adapters import BillToXMLSenderAdapter
 from apps.bill.models import BillingSetting, BillOrder
@@ -100,8 +101,8 @@ class BillOrderServiceAPIView(generics.ListCreateAPIView):
         bill.write_xml()
         bill.write_zip()
         settings = bill.order.restaurant.billing_settings
-        wsdl_url = 'https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl'
-        # wsdl_url = 'https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService?wsdl'
+        # wsdl_url = 'https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl'
+        wsdl_url = 'https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService?wsdl'
 
         username = '{}{}'.format(
             bill.order.restaurant.ruc,

@@ -130,7 +130,7 @@ TIME_ZONE = env('TIME_ZONE')
 
 USE_I18N = True
 
-USE_L10N = True
+USE_L10N = False
 
 USE_TZ = env('USE_TZ')
 

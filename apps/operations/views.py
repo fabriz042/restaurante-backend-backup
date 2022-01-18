@@ -444,3 +444,28 @@ class SerieRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     def perform_destroy(self, instance):
         instance.is_active = False
         instance.save()
+
+
+class OrderClosedListCreateAPIView(generics.ListCreateAPIView):
+    permission_classes = [DjangoModelPermissionsWithRead]
+    serializer_class = OrderSerializer
+    filter_backends = [
+        DjangoFilterBackend
+    ]
+    filterset_fields = [
+        'table',
+        'waiter',
+        'client',
+        'currency',
+        'payment_type',
+        'payment_document'
+    ]
+
+    def get_queryset(self):
+        return Order.objects.select_related(
+            'table', 'waiter'
+        ).filter(
+            is_active=True,
+            restaurant__user_profiles__user=self.request.user,
+            end_datetime__isnull=False
+        )
