@@ -12,9 +12,8 @@ from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from zeep import Client
-from zeep.transports import Transport
+from zeep.wsse import UsernameToken
 
 from apps.bill.adapters import BillToXMLSenderAdapter
 from apps.bill.models import BillingSetting, BillOrder
@@ -104,27 +103,29 @@ class BillOrderServiceAPIView(generics.ListCreateAPIView):
         # wsdl_url = 'https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl'
         wsdl_url = 'https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService?wsdl'
 
-        username = '{}{}'.format(
-            bill.order.restaurant.ruc,
-            settings.second_user
-        )
         adapter = BillToXMLSenderAdapter(bill, settings)
         content = adapter.build_file()
 
         bill.send_file.save(bill.filename + '.xml', io.StringIO(content))
 
-        f = open(bill.zip_file.path, 'rb')
-        data_file = f.read()
-        filename = Path(bill.zip_file.path).name
+        with open(bill.zip_file.path, 'rb') as f:
+            data_file = f.read()
+        f.close()
 
+        username = '{}{}'.format(
+            bill.order.restaurant.ruc,
+            settings.second_user
+        )
         password = settings.second_user_password
-        session = requests.session()
 
-        session.auth = requests.auth.HTTPBasicAuth(username, password)
+        wsse = UsernameToken(username, password)
+        client = self.connect(wsdl_url, wsse)
 
-        client = self.connect(wsdl_url, session)
-
-        response = self.send_bill(client, filename, data_file)
+        response = self.send_bill(
+            client,
+            Path(bill.zip_file.path).name,
+            data_file
+        )
 
         data = ContentFile(response)
         bill.response_zip_file.save(bill.filename + '.zip', data)
@@ -152,11 +153,7 @@ class BillOrderServiceAPIView(generics.ListCreateAPIView):
         try:
             client = Client(
                 wsdl_url,
-                transport=Transport(
-                    session=session,
-                    timeout=(5, 30)
-                ), service_name='billService',
-                port_name='BillServicePort'
+                wsse=session
             )
             return client
         except Exception as e:

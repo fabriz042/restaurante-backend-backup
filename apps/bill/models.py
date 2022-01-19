@@ -1,4 +1,5 @@
 import io
+from pathlib import Path
 from zipfile import ZipFile
 
 from django.core.validators import FileExtensionValidator
@@ -142,14 +143,17 @@ class BillOrder(Bill):
     def bill_name(self):
         return "{}-{}".format(
             self.order.serie,
-            str(self.id).zfill(8)
+            str(self.order.correlative).zfill(8)
         )
 
     def write_zip(self):
-        self.zip_file.save(
-            self.filename + '.zip',
-            io.BytesIO(b'')
-        )
+        filename = '{}.zip'.format(self.filename)
+        if not self.zip_file or not filename == Path(self.zip_file.path).name:
+            self.zip_file.save(
+                filename,
+                io.BytesIO(b'')
+            )
+        print(Path(self.zip_file.path).name, type(Path(self.zip_file.path).name))
         zip_obj = ZipFile(self.zip_file.path, 'w')
         zip_obj.write(self.xml_file.path, arcname=self.filename + '.xml')
         zip_obj.close()

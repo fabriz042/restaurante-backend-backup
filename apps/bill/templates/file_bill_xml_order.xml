@@ -82,7 +82,7 @@
             schemeID="6"
             schemeName="Documento de Identidad"
             schemeAgencyName="PE:SUNAT"
-            schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06">{{bill.client.document}}</cbc:ID>
+            schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06">{{bill.order.client.document}}</cbc:ID>
       </cac:PartyIdentification>
             <cac:PartyLegalEntity>
         <!-- Razon social del receptor -->
