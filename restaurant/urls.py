@@ -33,6 +33,7 @@ urlpatterns = [
     path('api/menu/', include('apps.menu.urls')),
     path('api/bill/', include('apps.bill.urls')),
     path('api/client/', include('apps.client.urls')),
+    path('api/stats/', include('apps.stats.urls')),
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
