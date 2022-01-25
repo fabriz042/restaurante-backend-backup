@@ -99,6 +99,12 @@ class PurchaseAdmin(admin.ModelAdmin):
 class OrderDetailTabularInLine(admin.TabularInline):
     model = OrderDetail
     extra = 0
+    fields = [
+        'menu_item',
+        'quantity',
+        'state',
+        'unit_price'
+    ]
 
 
 class OrderAdmin(admin.ModelAdmin):
