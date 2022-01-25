@@ -94,7 +94,8 @@ class MenuRecipeListCreateAPIView(generics.ListCreateAPIView):
             'category', 'recipe'
         ).filter(
             is_active=True,
-            restaurant__user_profiles__user=self.request.user
+            restaurant__user_profiles__user=self.request.user,
+            recipe__is_active=True
         )
 
     def perform_create(self, serializer):
@@ -112,7 +113,8 @@ class MenuRecipeRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIVi
             'category', 'recipe'
         ).filter(
             is_active=True,
-            restaurant__user_profiles__user=self.request.user
+            restaurant__user_profiles__user=self.request.user,
+            recipe__is_active=True
         )
 
     def perform_destroy(self, instance):
