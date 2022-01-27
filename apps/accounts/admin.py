@@ -2,6 +2,7 @@ from django.contrib import admin
 
 # Register your models here.
 from django.contrib.auth.models import User, Group, Permission
+from django.contrib.contenttypes.models import ContentType
 
 from apps.accounts.models import Restaurant, Profile, Settings, Role
 from django.contrib.auth.admin import UserAdmin as AuthUserAdmin, GroupAdmin
@@ -205,3 +206,5 @@ admin.site.register(Restaurant, RestaurantAdmin)
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 admin.site.register(Role, RoleAdmin)
+admin.site.register(Permission)
+admin.site.register(ContentType)

@@ -116,7 +116,38 @@ class ListPermissionAPIView(generics.ListAPIView):
     serializer_class = PermissionSerializer
 
     def get_queryset(self):
-        return Permission.objects.all()
+        return Permission.objects.all().order_by('content_type')
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        data = []
+        current_item = None
+        serialized_data = self.get_serializer_class()(queryset, many=True).data
+        for item in serialized_data:
+            if not current_item:
+                current_item = item['content_type']
+                current_item['permissions'] = [{
+                    'id': item['id'],
+                    'name': item['name'],
+                    'codename': item['codename']
+                }]
+                data.append(current_item)
+            elif current_item['id'] == item['content_type']['id']:
+                current_item['permissions'].append({
+                    'id': item['id'],
+                    'name': item['name'],
+                    'codename': item['codename']
+                })
+            else:
+                current_item = item['content_type']
+                current_item['permissions'] = [{
+                    'id': item['id'],
+                    'name': item['name'],
+                    'codename': item['codename']
+                }]
+                data.append(current_item)
+        return Response(data)
+
 
 
 class RestaurantRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
