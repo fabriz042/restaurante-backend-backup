@@ -84,7 +84,7 @@ class OrdersYearAPIView(APIView):
 
     def get(self, request):
         data = {}
-        datetime_format = '%Y-%d-%m'
+        datetime_format = '%Y-%m-%d'
         current_date = datetime.datetime.now(tz=pytz.timezone(settings.TIME_ZONE))
         last_year_date = current_date - datetime.timedelta(days=365)
         while current_date >= last_year_date:
