@@ -97,6 +97,13 @@ class OrdersYearAPIView(APIView):
         ).values('start_datetime__date').annotate(sum=Count("id"))
         for order in orders:
             data[order['start_datetime__date'].strftime(datetime_format)] = order['sum']
+        data_ = data
+        data = []
+        for item in data_:
+            data.append({
+                "date": item,
+                "value": data_[item]
+            })
         return Response(
             data=data,
             status=status.HTTP_200_OK
