@@ -229,6 +229,12 @@ class OrderDetailListCreateAPIView(generics.ListCreateAPIView):
         instance.unit_price = instance.menu_item.sell_price
         instance.save()
 
+        menu_recipes = MenuRecipe.objects.filter(id=instance.menu_item.id)
+        if len(menu_recipes) > 0:
+            menu_recipe = menu_recipes[0]
+            menu_recipe.daily_quantity -= instance.quantity
+            menu_recipe.save()
+
 
 class OrderDetailRetrieveDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [DjangoModelPermissionsWithRead]
@@ -244,6 +250,12 @@ class OrderDetailRetrieveDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
         instance.is_active = False
         instance.save()
         instance.movements.all().update(is_active=False)
+
+        menu_recipes = MenuRecipe.objects.filter(id=instance.menu_item.id)
+        if len(menu_recipes) > 0:
+            menu_recipe = menu_recipes[0]
+            menu_recipe.daily_quantity += instance.quantity
+            menu_recipe.save()
 
 
 class OrderDetailMakeMovementsAPIViews(generics.UpdateAPIView):

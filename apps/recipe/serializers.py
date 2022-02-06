@@ -54,6 +54,9 @@ class RecipeSerializer(serializers.ModelSerializer):
         queryset=MenuRecipe.objects.filter(is_active=True),
         required=False
     )
+    daily_quantity = serializers.IntegerField(
+        source='menu_recipe.daily_quantity'
+    )
 
     class Meta:
         model = Recipe
@@ -66,7 +69,8 @@ class RecipeSerializer(serializers.ModelSerializer):
             'menu_recipe',
             'sell_price',
             'default_warehouse',
-            'menu_category'
+            'menu_category',
+            'daily_quantity'
         ]
         read_only_fields = ('is_active', 'id', 'details')
 
@@ -76,7 +80,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         instance = super(RecipeSerializer, self).update(instance, validated_data)
         for attr_name in menu_recipe_data:
             setattr(instance.menu_recipe, attr_name, menu_recipe_data[attr_name])
-        instance.menu_recipe .save()
+        instance.menu_recipe.save()
         return instance
 
     def create(self, validated_data):
@@ -87,6 +91,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         menu_recipe_data['recipe'] = instance
         menu_recipe = MenuRecipe()
         for attr_name in menu_recipe_data:
+            print(attr_name)
             setattr(menu_recipe, attr_name, menu_recipe_data[attr_name])
         menu_recipe.save()
         return instance

@@ -101,6 +101,10 @@ class MenuRecipe(MenuItem):
         verbose_name='Receta',
         related_name='menu_recipe'
     )
+    daily_quantity = models.IntegerField(
+        default=0,
+        verbose_name='Cantidad'
+    )
 
     class Meta:
         verbose_name = 'Menú Receta'

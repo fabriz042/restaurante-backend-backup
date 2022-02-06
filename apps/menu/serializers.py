@@ -35,7 +35,7 @@ class MenuRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = MenuRecipe
         fields = [
-            'id', 'category', 'sell_price', 'recipe', 'is_active'
+            'id', 'category', 'sell_price', 'recipe', 'is_active', 'daily_quantity'
         ]
         read_only_fields = ('is_active', 'id')
 
