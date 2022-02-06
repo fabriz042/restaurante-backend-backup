@@ -240,7 +240,6 @@ class OrderDetailListCreateAPIView(generics.ListCreateAPIView):
         instance.save()
 
 
-
 class OrderDetailRetrieveDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [DjangoModelPermissionsWithRead]
     serializer_class = OrderDetailSerializer
@@ -405,14 +404,22 @@ class PaymentDocumentRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroy
 
 
 class OrderTicketAPIView(generics.RetrieveUpdateDestroyAPIView):
+    class TicketType:
+        IGV = 4
+        NO_IGV = 2
+        KITCHEN = 0
+
     # permission_classes = [DjangoModelPermissionsWithRead]
+    ticket_type = TicketType.IGV
     queryset = Order.objects.filter(is_active=True)
 
     def get(self, request, *args, **kwargs):
         order = self.get_object()
         html = render_to_string('ticket_order.html', {
             'order': order,
-            'details': order.details.filter(is_active=True)
+            'details': order.details.filter(is_active=True),
+            'ticket_type': self.ticket_type,
+            'ticket_types': OrderTicketAPIView.TicketType()
         })
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = 'attachment; filename=Comprobante_{}-{}.pdf'.format(
@@ -486,3 +493,11 @@ class OrderClosedListCreateAPIView(generics.ListCreateAPIView):
             restaurant__user_profiles__user=self.request.user,
             end_datetime__isnull=False
         )
+
+
+class OrderTicketNoIGVAPIView(OrderTicketAPIView):
+    ticket_type = OrderTicketAPIView.TicketType.NO_IGV
+
+
+class OrderTicketKitchenAPIView(OrderTicketAPIView):
+    ticket_type = OrderTicketAPIView.TicketType.KITCHEN
