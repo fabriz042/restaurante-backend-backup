@@ -10,6 +10,7 @@ from django_xhtml2pdf.utils import generate_pdf
 from rest_framework import generics
 
 # Create your views here.
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from xhtml2pdf import pisa
 
@@ -225,15 +226,19 @@ class OrderDetailListCreateAPIView(generics.ListCreateAPIView):
         )
 
     def perform_create(self, serializer):
+        data = serializer.validated_data
+        menu_recipes = MenuRecipe.objects.filter(id=data['menu_item'].id)
+        if len(menu_recipes) > 0:
+            menu_recipe = menu_recipes[0]
+            if menu_recipe.daily_quantity >= data['quantity']:
+                menu_recipe.daily_quantity -= data['quantity']
+                menu_recipe.save()
+            else:
+                raise ValidationError({'detail': 'No se tienen suficientes platos para consumir este plato'})
         instance = serializer.save()
         instance.unit_price = instance.menu_item.sell_price
         instance.save()
 
-        menu_recipes = MenuRecipe.objects.filter(id=instance.menu_item.id)
-        if len(menu_recipes) > 0:
-            menu_recipe = menu_recipes[0]
-            menu_recipe.daily_quantity -= instance.quantity
-            menu_recipe.save()
 
 
 class OrderDetailRetrieveDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
