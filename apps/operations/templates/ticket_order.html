@@ -59,7 +59,7 @@
                 <p><b>Cliente:</b> {{ order.client.name }}</p>
                 <p><b>Dirección:</b> {{ order.client.address }}</p>
                 <p><b>RUC/DNI:</b> {{ order.client.document }}</p>
-                <p><b>Fech. Emisión:</b> {{ order.start_date|date:"d/m/Y" }}</p>
+                <p><b>Fech. Emisión:</b> {{ order.start_datetime|date:"d/m/Y" }}</p>
                 <p><b>Venta:</b> {{ order.payment_type.name| title }}</p>
                 {% if ticket_type == ticket_types.KITCHEN %}
                 <p><b>Mesero:</b> {{ order.waiter.first_name| title }} {{ order.waiter.last_name| title }}</p>

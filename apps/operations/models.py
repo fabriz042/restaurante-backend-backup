@@ -40,12 +40,21 @@ class PaymentType(models.Model):
 
 
 class PaymentDocument(models.Model):
+    class ElectronicDocument(models.IntegerChoices):
+        ELECTRONIC_BILL = 0, 'Factura Electrónica'
+
     restaurant = models.ForeignKey(
         Restaurant,
         on_delete=models.CASCADE,
         related_name='payment_documents',
         null=False,
         verbose_name='Restaurante'
+    )
+    electronic_document = models.IntegerField(
+        choices=ElectronicDocument.choices,
+        null=True,
+        default=None,
+        verbose_name='Documento Electrónico'
     )
     name = models.CharField(
         max_length=200,

@@ -142,7 +142,7 @@ class PaymentDocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = PaymentDocument
         fields = [
-            'id', 'name', 'is_active'
+            'id', 'name', 'is_active', 'electronic_document',
         ]
         read_only_fields = ('is_active', 'id')
 
