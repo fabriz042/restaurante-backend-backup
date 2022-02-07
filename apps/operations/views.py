@@ -201,6 +201,15 @@ class OrderRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
         instance.table.state = Table.State.FREE
         instance.table.save()
 
+        details = instance.details.filter(is_active=True)
+        for detail in details:
+            detail.is_active = False
+            detail.save()
+            recipe_menu = MenuRecipe.objects.filter(id=detail.menu_item.id)
+            if len(recipe_menu) > 0:
+                recipe_menu[0].daily_quantity += detail.quantity
+                recipe_menu[0].save()
+
     def perform_update(self, serializer):
         prev_instance = self.get_object()
         instance = serializer.save()
