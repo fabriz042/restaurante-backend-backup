@@ -42,6 +42,7 @@ class PaymentType(models.Model):
 class PaymentDocument(models.Model):
     class ElectronicDocument(models.IntegerChoices):
         ELECTRONIC_BILL = 0, 'Factura Electrónica'
+        ORDER_NOTE = 1, 'Nota de Pedido'
 
     restaurant = models.ForeignKey(
         Restaurant,
@@ -182,7 +183,7 @@ class Purchase(Operation):
         )
         subtotal = mount['subtotal_total'] if mount['subtotal_total'] else 0
         igv = mount['igv_total'] if mount['igv_total'] else 0
-        return subtotal + igv
+        return subtotal# + igv
 
     @property
     def operation_value_as_letters(self):
@@ -251,7 +252,11 @@ class OperationsDetail(models.Model):
 
 
 class PurchaseDetail(OperationsDetail):
-    pass
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        self.subtotal = self.unitary_value * self.movement.quantity
+        super(PurchaseDetail, self).save(force_insert, force_update, using, update_fields)
 
 
 class Order(models.Model):

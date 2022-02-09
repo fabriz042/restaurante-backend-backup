@@ -40,6 +40,7 @@ class PurchaseSerializer(serializers.ModelSerializer):
         data['total'] = instance.operation_value
         data['paid'] = instance.paid
         data['debt'] = instance.debt
+        data['igv'] = instance.igv_
         return data
 
 
