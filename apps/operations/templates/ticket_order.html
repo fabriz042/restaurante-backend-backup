@@ -9,7 +9,12 @@
             margin: 0.5cm 0.5cm 0.5cm 0.5cm;
         }
         p, h1, h2, td {
+            {% if not ticket_type == ticket_types.KITCHEN %}
             line-height: 15px;
+            {% else %}
+            line-height: 25px;
+            font-size: 20px;
+            {% endif %}
             padding: 0px;
             margin: 0px;
         }
@@ -41,6 +46,7 @@
     <body>
     <main class="container">
         <center>
+            {% if not ticket_type == ticket_types.KITCHEN %}
             <div>
             <img class="image" src="{{ order.restaurant.picture.path }}" >
             </div>
@@ -48,20 +54,24 @@
             <p><b>RUC:</b> {{ order.restaurant.ruc }}</p>
             <p>{{order.restaurant.address}}</p>
             <p><b>Cel:</b> {{order.restaurant.phone}}</p>
-            {% if not ticket_type == ticket_types.KITCHEN %}
             <h2>{{ order.payment_document|title }} - {{ order.payment_type.name }}</h2>
+            {% endif %}
+            {% if not ticket_type == ticket_types.KITCHEN %}
             <p>{{ order.serie }}-{{ order.correlative|stringformat:"08d" }}</p>
             {% else %}
-            <p>{{ order.table.hall.name }}-{{ order.table.name }}</p>
+            <p>Pedido N° {{ order.id|stringformat:"04d" }}</p>
             {% endif %}
             <p style="line-height: 0px;"></p>
             <div class="align">
+                {% if not ticket_type == ticket_types.KITCHEN %}
                 <p><b>Cliente:</b> {{ order.client.name }}</p>
                 <p><b>Dirección:</b> {{ order.client.address }}</p>
                 <p><b>RUC/DNI:</b> {{ order.client.document }}</p>
                 <p><b>Fech. Emisión:</b> {{ order.start_datetime|date:"d/m/Y" }}</p>
                 <p><b>Venta:</b> {{ order.payment_type.name| title }}</p>
-                {% if ticket_type == ticket_types.KITCHEN %}
+                {% else %}
+                <p><b>Salón:</b> {{ order.table.hall.name }}</p>
+                <p><b>Mesa:</b> {{ order.table.name }}</p>
                 <p><b>Mesero:</b> {{ order.waiter.first_name| title }} {{ order.waiter.last_name| title }}</p>
                 {% endif %}
             </div>
@@ -86,7 +96,11 @@
                 <tbody>
                 {% for detail in details %}
                 <tr>
+                    {% if not ticket_type == ticket_types.KITCHEN %}
                     <td>{{ detail.menu_item.menu_item_name }}</td>
+                    {% else %}
+                    <td><b>{{ detail.menu_item.menu_item_name }}</b></td>
+                    {% endif %}
                     {% if ticket_type == ticket_types.IGV %}
                     <td>{{ detail.prize_net|floatformat:2 }}</td>
                     <td>{{ detail.igv|floatformat:2 }}</td>
@@ -94,7 +108,11 @@
                     {% if not ticket_type == ticket_types.KITCHEN %}
                     <td>{{ detail.unit_price|floatformat:2 }}</td>
                     {% endif %}
-                    <td>{{ detail.quantity }}</td>
+                    {% if not ticket_type == ticket_types.KITCHEN %}
+                    <td>{{ detail.quantity  }}</td>
+                    {% else %}
+                    <td><b>{{ detail.quantity  }}</b></td>
+                    {% endif %}
                     {% if not ticket_type == ticket_types.KITCHEN %}
                     <td>{{ detail.sub_total|floatformat:2 }}</td>
                     {% endif %}
