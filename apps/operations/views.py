@@ -290,7 +290,7 @@ class OrderDetailMakeMovementsAPIViews(generics.UpdateAPIView):
             movement = WarehouseMovement(
                 restaurant=instance.header.restaurant,
                 warehouse=instance.menu_item.warehouse,
-                quantity=instance.quantity,
+                quantity=instance.quantity * -1,
                 product=is_product[0].product
             )
             movement.save()
@@ -301,7 +301,7 @@ class OrderDetailMakeMovementsAPIViews(generics.UpdateAPIView):
                 movement = WarehouseMovement(
                     restaurant=instance.header.restaurant,
                     warehouse=instance.menu_item.warehouse,
-                    quantity=instance.quantity * recipe_detail.quantity,
+                    quantity=instance.quantity * recipe_detail.quantity * -1,
                     product=recipe_detail.product
                 )
                 movement.save()
