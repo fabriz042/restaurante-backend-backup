@@ -360,7 +360,7 @@ class OrderExtendedListAPIView(generics.ListAPIView):
 
 
 class PurchaseTicketAPIView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [DjangoModelPermissionsWithRead]
+    # permission_classes = [DjangoModelPermissionsWithRead]
     queryset = Purchase.objects.filter(is_active=True)
 
     def get(self, request, *args, **kwargs):
