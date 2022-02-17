@@ -255,7 +255,7 @@ class PurchaseDetail(OperationsDetail):
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
-        self.subtotal = self.unitary_value * self.movement.quantity
+        self.subtotal = self.unitary_value * WarehouseMovement.objects.get(id=self.movement.id).quantity
         super(PurchaseDetail, self).save(force_insert, force_update, using, update_fields)
 
 
