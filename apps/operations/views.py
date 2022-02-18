@@ -16,6 +16,7 @@ from xhtml2pdf import pisa
 
 from apps.hall.models import Table
 from apps.menu.models import MenuProduct, MenuRecipe
+from apps.operations.filter import OrderFilter
 from apps.operations.models import PaymentType, Purchase, PurchaseDetail, Order, OrderDetail, PaymentDocument, Serie
 from apps.operations.serializers import PaymentTypeSerializer, PurchaseSerializer, PurchaseDetailSerializer, \
     OrderSerializer, OrderDetailSerializer, OrderExtendedSerializer, PaymentDocumentSerializer, SerieSerializer
@@ -480,19 +481,12 @@ class SerieRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class OrderClosedListCreateAPIView(generics.ListCreateAPIView):
-    permission_classes = [DjangoModelPermissionsWithRead]
+    # permission_classes = [DjangoModelPermissionsWithRead]
     serializer_class = OrderSerializer
     filter_backends = [
         DjangoFilterBackend
     ]
-    filterset_fields = [
-        'table',
-        'waiter',
-        'client',
-        'currency',
-        'payment_type',
-        'payment_document'
-    ]
+    filterset_class = OrderFilter
 
     def get_queryset(self):
         return Order.objects.select_related(

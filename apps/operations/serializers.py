@@ -94,6 +94,7 @@ class OrderSerializer(serializers.ModelSerializer):
             data['payment_document'] = PaymentDocumentSerializer(instance.payment_document).data
         if instance.client:
             data['client'] = ClientSerializer(instance.client).data
+        data['total'] = serializers.DecimalField(decimal_places=2, max_digits=8).to_representation(instance.total)
         return data
 
 

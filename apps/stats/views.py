@@ -94,9 +94,9 @@ class OrdersYearAPIView(APIView):
             is_active=True,
             restaurant__user_profiles__user=self.request.user,
             start_datetime__gte=last_year_date
-        ).values('start_datetime__date').annotate(sum=Count("id"))
+        )# .values('start_datetime__date').annotate(sum=Count("id"))
         for order in orders:
-            data[order['start_datetime__date'].strftime(datetime_format)] = order['sum']
+            data[order.start_datetime.strftime(datetime_format)] += order.total
         data_ = data
         data = []
         for item in data_:
