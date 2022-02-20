@@ -217,6 +217,37 @@ class OrderRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
         if not prev_instance.end_datetime and instance.end_datetime:
             instance.table.state = Table.State.FREE
             instance.table.save()
+            details = instance.details.filter(is_active=True)
+            for detail in details:
+                self.make_movements_per_detail(detail)
+
+    @staticmethod
+    def make_movements_per_detail(instance):
+        is_product = MenuProduct.objects.filter(id=instance.menu_item.id)
+        is_recipe = MenuRecipe.objects.filter(id=instance.menu_item.id)
+        movements = []
+        if len(is_product) > 0:
+            movement = WarehouseMovement(
+                restaurant=instance.header.restaurant,
+                warehouse=instance.menu_item.warehouse,
+                quantity=instance.quantity * -1,
+                product=is_product[0].product
+            )
+            movement.save()
+            instance.movements.add(movement)
+            instance.save()
+        if len(is_recipe) > 0:
+            for recipe_detail in is_recipe[0].recipe.details.all():
+                movement = WarehouseMovement(
+                    restaurant=instance.header.restaurant,
+                    warehouse=instance.menu_item.warehouse,
+                    quantity=instance.quantity * recipe_detail.quantity * -1,
+                    product=recipe_detail.product
+                )
+                movement.save()
+                instance.movements.add(movement)
+                instance.save()
+                movements.append(movement)
 
 
 class OrderDetailListCreateAPIView(generics.ListCreateAPIView):
