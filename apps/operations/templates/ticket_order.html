@@ -95,6 +95,7 @@
                 </thead>
                 <tbody>
                 {% for detail in details %}
+                {% if ticket_type == ticket_types.KITCHEN and detail.menu_item.is_recipe or not ticket_type == ticket_types.KITCHEN%}
                 <tr>
                     {% if not ticket_type == ticket_types.KITCHEN %}
                     <td>{{ detail.menu_item.menu_item_name }}</td>
@@ -117,6 +118,7 @@
                     <td>{{ detail.sub_total|floatformat:2 }}</td>
                     {% endif %}
                 </tr>
+                {% endif %}
                 {% endfor %}
 
                 {% if ticket_type == ticket_types.IGV %}
