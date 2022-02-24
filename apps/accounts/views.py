@@ -149,7 +149,6 @@ class ListPermissionAPIView(generics.ListAPIView):
         return Response(data)
 
 
-
 class RestaurantRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
     permission_classes = [DjangoModelPermissionsWithRead]
     serializer_class = RestaurantSerializer
@@ -166,3 +165,19 @@ class RestaurantPictureRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user.profile.restaurant
+
+
+class WaiterUserListAPIView(generics.ListAPIView):
+    permission_classes = [DjangoModelPermissionsWithRead]
+    serializer_class = UserSerializer
+
+    def get_queryset(self):
+        roles_id = list(Role.objects.filter(
+            restaurant=self.request.user.profile.restaurant,
+            role_name='Mozo'
+        ).values_list('id', flat=True))
+        return User.objects.filter(
+            profile__restaurant=self.request.user.profile.restaurant,
+            is_active=True,
+            groups__id__in=roles_id
+        )
