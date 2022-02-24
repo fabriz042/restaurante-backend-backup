@@ -535,3 +535,38 @@ class OrderTicketNoIGVAPIView(OrderTicketAPIView):
 
 class OrderTicketKitchenAPIView(OrderTicketAPIView):
     ticket_type = OrderTicketAPIView.TicketType.KITCHEN
+
+
+class AdditionalTicketAPIView(generics.UpdateAPIView):
+    template_name = 'ticket_order.html'
+    ticket_type = OrderTicketAPIView.TicketType.KITCHEN
+
+    def get_queryset(self):
+        return Order.objects.select_related(
+            'table', 'waiter'
+        ).filter(
+            is_active=True,
+            restaurant__user_profiles__user=self.request.user
+        )
+
+    def put(self, request, *args, **kwargs):
+        order = self.get_object()
+        html = render_to_string(self.template_name, {
+            'order': order,
+            'details': order.details.filter(
+                is_active=True,
+                id__in=request.data
+            ),
+            'ticket_type': self.ticket_type,
+            'ticket_types': OrderTicketAPIView.TicketType()
+        })
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename=Comprobante_{}-{}.pdf'.format(
+            order.serie,
+            str(order.correlative)
+        )
+        result = BytesIO()
+        pdf = pisa.pisaDocument(BytesIO(html.encode("utf-8")), result)
+        if not pdf.err:
+            return HttpResponse(result.getvalue(), content_type='application/pdf')
+        return None
