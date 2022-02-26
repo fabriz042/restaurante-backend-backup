@@ -546,7 +546,6 @@ class AdditionalTicketAPIView(generics.UpdateAPIView):
             'table', 'waiter'
         ).filter(
             is_active=True,
-            restaurant__user_profiles__user=self.request.user
         )
 
     def put(self, request, *args, **kwargs):
