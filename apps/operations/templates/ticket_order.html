@@ -60,6 +60,7 @@
             <p>{{ order.serie }}-{{ order.correlative|stringformat:"08d" }}</p>
             {% else %}
             <p>Pedido N° {{ order.id|stringformat:"04d" }}</p>
+            <p>{% now "SHORT_DATETIME_FORMAT" %}</p>
             {% endif %}
             <p style="line-height: 0px;"></p>
             <div class="align">
