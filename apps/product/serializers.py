@@ -1,5 +1,5 @@
 from rest_framework import serializers
-
+from django.db.models import Sum
 from apps.menu.models import MenuProduct, MenuCategory
 from apps.product.models import Brand, ProductCategory, MeasurementUnit, Product
 from apps.warehouse.models import Warehouse, WarehouseMovement
@@ -130,6 +130,8 @@ class ProductMiniSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super(ProductMiniSerializer, self).to_representation(instance)
-        stock = WarehouseMovement.objects.filter(is_active=True, product_id=instance.product.id).count()
-        data['stock'] = stock if stock else 0
+        movements = WarehouseMovement.objects.filter(is_active=True, product_id=instance.id).annotate(
+            stock=Sum('quantity')
+        ).order_by('stock')
+        data['stock'] = movements['stock'] if movements['stock'] else 0
         return data
