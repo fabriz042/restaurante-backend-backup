@@ -28,7 +28,6 @@ class MenuProductSerializer(serializers.ModelSerializer):
             data['category'] = MenuCategorySerializer(instance.category).data
         if instance.product:
             data['product'] = ProductMiniSerializer(instance.product).data
-            data['stock'] = 0
         return data
 
 
