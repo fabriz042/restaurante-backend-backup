@@ -237,7 +237,7 @@ class OrderDetailListCreateAPIView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         data = serializer.validated_data
         menu_recipes = MenuRecipe.objects.filter(id=data['menu_item'].id)
-        products = MenuProduct.objects.filter(id=data['menu_item'].id)
+        menu_products = MenuProduct.objects.filter(id=data['menu_item'].id)
         if len(menu_recipes) > 0:
             menu_recipe = menu_recipes[0]
             if menu_recipe.daily_quantity >= data['quantity']:
@@ -245,8 +245,8 @@ class OrderDetailListCreateAPIView(generics.ListCreateAPIView):
                 menu_recipe.save()
             else:
                 raise ValidationError({'detail': 'No se tienen suficientes platos para consumir este plato'})
-        if len(products) > 0:
-            product = products[0]
+        if len(menu_products) > 0:
+            product = menu_products[0].product
             stock = WarehouseMovement.objects.filter(is_active=True, product_id=product.id).aggregate(Sum('quantity'))['quantity__sum']
             stock = stock if stock else 0
             if stock >= data['quantity']:
