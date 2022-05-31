@@ -130,8 +130,6 @@ class ProductMiniSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super(ProductMiniSerializer, self).to_representation(instance)
-        movements = WarehouseMovement.objects.filter(is_active=True, product_id=instance.id).annotate(
-            stock=Sum('quantity')
-        ).order_by('stock')
-        data['stock'] = movements['stock'] if movements['stock'] else 0
+        stock = WarehouseMovement.objects.filter(is_active=True, product_id=instance.id).aggregate(Sum('quantity'))['quantity__sum']
+        data['stock'] = stock if stock else 0
         return data

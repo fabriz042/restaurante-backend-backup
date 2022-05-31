@@ -3,6 +3,7 @@ from io import StringIO, BytesIO
 
 import pytz
 from django.conf import settings
+from django.db.models import Sum
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django_filters.rest_framework import DjangoFilterBackend
@@ -210,6 +211,7 @@ class OrderRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
             if len(recipe_menu) > 0:
                 recipe_menu[0].daily_quantity += detail.quantity
                 recipe_menu[0].save()
+            detail.movements.all().update(is_active=False)
 
     def perform_update(self, serializer):
         prev_instance = self.get_object()
@@ -235,6 +237,7 @@ class OrderDetailListCreateAPIView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         data = serializer.validated_data
         menu_recipes = MenuRecipe.objects.filter(id=data['menu_item'].id)
+        products = MenuProduct.objects.filter(id=data['menu_item'].id)
         if len(menu_recipes) > 0:
             menu_recipe = menu_recipes[0]
             if menu_recipe.daily_quantity >= data['quantity']:
@@ -242,9 +245,18 @@ class OrderDetailListCreateAPIView(generics.ListCreateAPIView):
                 menu_recipe.save()
             else:
                 raise ValidationError({'detail': 'No se tienen suficientes platos para consumir este plato'})
+        if len(products) > 0:
+            product = products[0]
+            stock = WarehouseMovement.objects.filter(is_active=True, product_id=product.id).aggregate(Sum('quantity'))['quantity__sum']
+            stock = stock if stock else 0
+            if stock >= data['quantity']:
+                pass
+            else:
+                raise ValidationError({'detail': 'No se tienen suficientes productos para este pedido'})
         instance = serializer.save()
         instance.unit_price = instance.menu_item.sell_price
         instance.save()
+        CloseOrderAPIView.make_movements_per_detail(instance)  # stock discount
 
 
 class OrderDetailRetrieveDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
@@ -267,6 +279,35 @@ class OrderDetailRetrieveDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
             menu_recipe = menu_recipes[0]
             menu_recipe.daily_quantity += instance.quantity
             menu_recipe.save()
+
+    @staticmethod
+    def make_movements_per_detail(instance):
+        is_product = MenuProduct.objects.filter(id=instance.menu_item.id)
+        is_recipe = MenuRecipe.objects.filter(id=instance.menu_item.id)
+        movements = []
+        if len(is_product) > 0:
+            movement = WarehouseMovement(
+                restaurant=instance.header.restaurant,
+                warehouse=instance.menu_item.warehouse,
+                quantity=instance.quantity,
+                product=is_product[0].product
+            )
+            movement.save()
+            instance.movements.add(movement)
+            instance.save()
+        if len(is_recipe) > 0:
+            for recipe_detail in is_recipe[0].recipe.details.all():
+                movement = WarehouseMovement(
+                    restaurant=instance.header.restaurant,
+                    warehouse=instance.menu_item.warehouse,
+                    quantity=instance.quantity * recipe_detail.quantity,
+                    product=recipe_detail.product
+                )
+                movement.save()
+                instance.movements.add(movement)
+                instance.save()
+                movements.append(movement)
+        return movements
 
 
 class OrderDetailMakeMovementsAPIViews(generics.UpdateAPIView):
@@ -556,13 +597,7 @@ class CloseOrderAPIView(generics.UpdateAPIView):
         order.save()
         order.table.state = Table.State.FREE
         order.table.save()
-        details = order.details.filter(is_active=True)
-        movements = []
-        for detail in details:
-            movements += self.make_movements_per_detail(detail)
-        return Response(
-            self.serializer_class(movements, many=True).data
-        )
+        return Response(status=200)
 
     @staticmethod
     def make_movements_per_detail(instance):
@@ -609,14 +644,9 @@ class CloseAllOrderAPIView(generics.CreateAPIView):
     
     def create(self, request, *args, **kwargs):
         orders = self.get_queryset()
-        movements = []
+        # movements = []
         for order in orders:
             order.table.state = Table.State.FREE
             order.table.save()
-            details = order.details.filter(is_active=True)
-            for detail in details:
-                movements += CloseOrderAPIView.make_movements_per_detail(detail)
         orders.update(end_datetime=datetime.datetime.now(tz=pytz.timezone(settings.TIME_ZONE)))
-        return Response(
-            self.serializer_class(movements, many=True).data
-        )
+        return Response(status=200)
