@@ -84,6 +84,21 @@ class BillingSetting(models.Model):
 
 
 class Bill(models.Model):
+    def xml_file_upload_location(instance, filename):
+        return 'sunat/bill.xml/{}/{}'.format(instance.order.restaurant.id, filename)
+
+    def zip_file_upload_location(instance, filename):
+        return 'sunat/bill.zip/{}/{}'.format(instance.order.restaurant.id, filename)
+
+    def response_zip_file_upload_location(instance, filename):
+        return 'sunat/response.bill.zip/{}/{}'.format(instance.order.restaurant.id, filename)
+
+    def response_xml_file_upload_location(instance, filename):
+        return 'sunat/response.bill.xml/{}/{}'.format(instance.order.restaurant.id, filename)
+
+    def send_file_upload_location(instance, filename):
+        return 'sunat/bill.send/{}/{}'.format(instance.order.restaurant.id, filename)
+
     xml_file = models.FileField(
         storage=OverwriteStorage,
         upload_to='sunat/bill.xml/',
@@ -98,13 +113,24 @@ class Bill(models.Model):
     )
     response_zip_file = models.FileField(
         storage=OverwriteStorage,
-        upload_to='sunat/response.bill.zip/',
+        upload_to=response_zip_file_upload_location,
         default=None,
+        blank=True
+    )
+    response_xml_file = models.FileField(
+        storage=OverwriteStorage,
+        upload_to=response_xml_file_upload_location,
+        default=None,
+        blank=True
+    )
+    response_code = models.CharField(
+        max_length=4,
+        default='',
         blank=True
     )
     send_file = models.FileField(
         storage=OverwriteStorage,
-        upload_to='sunat/bill.send/',
+        upload_to=send_file_upload_location,
         default=None,
         blank=True
     )
@@ -134,8 +160,9 @@ class BillOrder(Bill):
 
     @property
     def filename(self):
-        return '{}-01-{}'.format(
+        return '{}-0{}-{}'.format(
             self.order.restaurant.ruc,
+            self.order.payment_document.electronic_document,
             self.bill_name
         )
 
@@ -153,8 +180,12 @@ class BillOrder(Bill):
                 filename,
                 io.BytesIO(b'')
             )
-        print(Path(self.zip_file.path).name, type(Path(self.zip_file.path).name))
         zip_obj = ZipFile(self.zip_file.path, 'w')
         zip_obj.write(self.xml_file.path, arcname=self.filename + '.xml')
         zip_obj.close()
 
+    def extract_response_zip(self):
+        if self.response_zip_file:
+            zip_object = ZipFile(self.response_zip_file.path)
+            self.response_xml_file.save('R-' + self.filename + '.xml', zip_object.open('R-'+self.filename + '.xml'))
+            zip_object.close()

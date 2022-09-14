@@ -34,6 +34,13 @@ class Restaurant(models.Model):
         null=True,
         verbose_name='RUC'
     )
+    igv_percent = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        default=0.18,
+        verbose_name='% IGV',
+        blank=True
+    )
     picture = models.ImageField(
         upload_to='restaurant/',
         blank=True,

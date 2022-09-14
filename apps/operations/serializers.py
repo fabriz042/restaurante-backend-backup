@@ -1,5 +1,5 @@
 from rest_framework import serializers
-
+from apps.bill.services import Services
 from apps.accounts.serializers import UserSerializer
 from apps.client.serializers import ClientSerializer
 from apps.currency.serializers import CurrencySerializer
@@ -76,6 +76,8 @@ class OrderSerializer(serializers.ModelSerializer):
             'payment_type',
             'payment_document',
             'client',
+            'igv_percent',
+            'related_order',
             'is_active'
         ]
         read_only_fields = ('is_active', 'id')
@@ -95,6 +97,18 @@ class OrderSerializer(serializers.ModelSerializer):
         if instance.client:
             data['client'] = ClientSerializer(instance.client).data
         data['total'] = serializers.DecimalField(decimal_places=2, max_digits=8).to_representation(instance.total)
+        return data
+
+
+class OrderSunatSerializer(OrderSerializer):
+    def to_representation(self, instance):
+        data = super(OrderSunatSerializer, self).to_representation(instance)
+        if instance.payment_document:
+            if instance.payment_document.electronic_document > 0:
+                consult_service = Services(settings=instance.restaurant.billing_settings).consult_bill(instance)
+                data['sunat_info'] = consult_service['message'] if 'message' in consult_service else None
+                data['sunat_code'] = consult_service['code'] if 'code' in consult_service else None
+        data['has_credit_note'] = None
         return data
 
 
@@ -135,6 +149,7 @@ class OrderExtendedSerializer(OrderSerializer):
             'end_datetime',
             'waiter',
             'is_active',
+            'igv_percent',
             'details'
         ]
         read_only_fields = ('is_active', 'id')

@@ -7,8 +7,7 @@ import requests
 from OpenSSL import crypto
 from django.core.files.base import ContentFile
 from rest_framework import generics, status
-
-# Create your views here.
+from apps.bill.services import Services
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
@@ -97,69 +96,12 @@ class BillOrderServiceAPIView(generics.ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         bill = self.get_object()
         self.validate(bill)
-        bill.write_xml()
-        bill.write_zip()
-        settings = bill.order.restaurant.billing_settings
-        # wsdl_url = 'https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService?wsdl'
-        wsdl_url = 'https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService?wsdl'
-
-        adapter = BillToXMLSenderAdapter(bill, settings)
-        content = adapter.build_file()
-
-        bill.send_file.save(bill.filename + '.xml', io.StringIO(content))
-
-        with open(bill.zip_file.path, 'rb') as f:
-            data_file = f.read()
-        f.close()
-
-        username = '{}{}'.format(
-            bill.order.restaurant.ruc,
-            settings.second_user
-        )
-        password = settings.second_user_password
-
-        wsse = UsernameToken(username, password)
-        client = self.connect(wsdl_url, wsse)
-
-        response = self.send_bill(
-            client,
-            Path(bill.zip_file.path).name,
-            data_file
-        )
-
-        data = ContentFile(response)
-        bill.response_zip_file.save(bill.filename + '.zip', data)
-
-        return Response(
-            self.get_serializer_class()(bill, context=self.get_serializer_context()).data,
-            status=status.HTTP_201_CREATED
-        )
-
-    @staticmethod
-    def send_bill(client, filename, data_file):
+        service = Services(bill.order.restaurant.billing_settings)
         try:
-            response = client.service.sendBill(
-                filename,
-                data_file
-            )
-            return response
+            data = service.send_bill(bill)
+            return Response(data, status=status.HTTP_200_OK)
         except Exception as e:
-            raise ValidationError({
-                'detail': str(e)
-            })
-
-    @staticmethod
-    def connect(wsdl_url, session):
-        try:
-            client = Client(
-                wsdl_url,
-                wsse=session
-            )
-            return client
-        except Exception as e:
-            raise ValidationError({
-                'detail': str(e)
-            })
+            raise ValidationError({'info': str(e)})
 
     @staticmethod
     def validate(bill: BillOrder):

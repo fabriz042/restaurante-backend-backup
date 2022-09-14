@@ -1,7 +1,7 @@
 import django_filters
 from django_filters.rest_framework import FilterSet
 
-from apps.operations.models import Order
+from apps.operations.models import Order, PaymentDocument
 
 
 class OrderFilter(FilterSet):
@@ -18,4 +18,15 @@ class OrderFilter(FilterSet):
             'currency',
             'payment_type',
             'payment_document'
+        ]
+
+
+class PaymentDocumentFilter(FilterSet):
+
+    class Meta:
+        model = PaymentDocument
+        fields = [
+            'cancel_sale',
+            'require_serie',
+            'is_cancelable',
         ]

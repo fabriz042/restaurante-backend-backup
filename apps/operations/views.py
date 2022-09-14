@@ -1,6 +1,6 @@
 import datetime
 from io import StringIO, BytesIO
-
+from django_filters import rest_framework as filters
 import pytz
 from django.conf import settings
 from django.db.models import Sum
@@ -17,13 +17,14 @@ from xhtml2pdf import pisa
 
 from apps.hall.models import Table
 from apps.menu.models import MenuProduct, MenuRecipe
-from apps.operations.filter import OrderFilter
+from apps.operations.filter import OrderFilter, PaymentDocumentFilter
 from apps.operations.models import PaymentType, Purchase, PurchaseDetail, Order, OrderDetail, PaymentDocument, Serie
 from apps.operations.serializers import PaymentTypeSerializer, PurchaseSerializer, PurchaseDetailSerializer, \
-    OrderSerializer, OrderDetailSerializer, OrderExtendedSerializer, PaymentDocumentSerializer, SerieSerializer
+    OrderSerializer, OrderDetailSerializer, OrderExtendedSerializer, PaymentDocumentSerializer, SerieSerializer, OrderSunatSerializer
 from apps.warehouse.models import WarehouseMovement
 from apps.warehouse.serializers import WarehouseMovementSerializer
 from restaurant.permissions import DjangoModelPermissionsWithRead
+from shared.pagination import CustomPagination
 
 
 class PaymentTypeListCreateAPIView(generics.ListCreateAPIView):
@@ -423,6 +424,8 @@ class PurchaseTicketAPIView(generics.RetrieveUpdateDestroyAPIView):
 class PaymentDocumentListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = PaymentDocumentSerializer
     permission_classes = [DjangoModelPermissionsWithRead]
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = PaymentDocumentFilter
 
     def get_queryset(self):
         return PaymentDocument.objects.filter(
@@ -520,11 +523,12 @@ class SerieRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
 
 class OrderClosedListCreateAPIView(generics.ListCreateAPIView):
     # permission_classes = [DjangoModelPermissionsWithRead]
-    serializer_class = OrderSerializer
+    serializer_class = OrderSunatSerializer
     filter_backends = [
         DjangoFilterBackend
     ]
     filterset_class = OrderFilter
+    pagination_class = CustomPagination
 
     def get_queryset(self):
         return Order.objects.select_related(
@@ -533,7 +537,7 @@ class OrderClosedListCreateAPIView(generics.ListCreateAPIView):
             is_active=True,
             restaurant__user_profiles__user=self.request.user,
             end_datetime__isnull=False
-        )
+        ).order_by('-id')
 
 
 class OrderTicketNoIGVAPIView(OrderTicketAPIView):

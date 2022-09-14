@@ -8,10 +8,11 @@ from signxml import XMLSigner
 
 
 class BillToXMLAdapter:
-    template_name = 'file_bill_xml_order.xml'
+    # template_name = 'file_bill_xml_order.xml'
 
-    def __init__(self, settings):
+    def __init__(self, settings, template_name):
         self.settings = settings
+        self.template_name = template_name
 
     def build_file(self):
         template = get_template(self.template_name)
@@ -51,10 +52,18 @@ class BillToXMLAdapter:
 
 
 class BillOrderToXMLAdapter(BillToXMLAdapter):
-    template_name = 'file_bill_xml_order.xml'
+    # template_name = 'file_bill_xml_order.xml'
 
     def __init__(self, order, settings):
-        super(BillOrderToXMLAdapter, self).__init__(settings)
+        template_name = 'file_bill_xml_order.xml'
+        current_order = order.order
+        if current_order.payment_document.electronic_document == current_order.payment_document.ElectronicDocument.ELECTRONIC_BILL:
+            template_name = 'file_bill_xml_order.xml'
+        elif current_order.payment_document.electronic_document == current_order.payment_document.ElectronicDocument.TICKET:
+            template_name = 'file_invoice_xml_order.xml'
+        elif current_order.payment_document.electronic_document == current_order.payment_document.ElectronicDocument.CREDIT_NOTE:
+            template_name = 'file_credit_xml_order.xml'
+        super(BillOrderToXMLAdapter, self).__init__(settings, template_name)
         self.order = order
 
     def get_context(self):

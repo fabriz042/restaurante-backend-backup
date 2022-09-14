@@ -41,8 +41,10 @@ class PaymentType(models.Model):
 
 class PaymentDocument(models.Model):
     class ElectronicDocument(models.IntegerChoices):
-        ELECTRONIC_BILL = 0, 'Factura Electrónica'
-        ORDER_NOTE = 1, 'Nota de Pedido'
+        UNDEFINED = 0, 'No Definido'
+        ELECTRONIC_BILL = 1, 'Factura Electrónica'
+        TICKET = 3, 'Boleta de Venta'
+        CREDIT_NOTE = 7, 'Nota de Crédito'
 
     restaurant = models.ForeignKey(
         Restaurant,
@@ -60,6 +62,18 @@ class PaymentDocument(models.Model):
     name = models.CharField(
         max_length=200,
         verbose_name='Nombre'
+    )
+    cancel_sale = models.BooleanField(
+        default=False,
+        verbose_name="Cancela venta"
+    )
+    require_serie = models.BooleanField(
+        default=False,
+        verbose_name="Requiere serie"
+    )
+    is_cancelable = models.BooleanField(
+        default=False,
+        verbose_name="Cancelable"
     )
     is_active = models.BooleanField(
         null=False,
@@ -336,6 +350,19 @@ class Order(models.Model):
         default=None,
         verbose_name='Cliente'
     )
+    igv_percent = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        default=0.18,
+        verbose_name='% IGV',
+        blank=True
+    )
+    related_order = models.ForeignKey(
+        'self',
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE
+    )
 
     class Meta:
         verbose_name = 'Pedido'
@@ -354,8 +381,12 @@ class Order(models.Model):
         return float(self.total) - self.sub_total
 
     @property
+    def igv_percent_formatted(self):
+        return float(self.igv_percent*100)
+
+    @property
     def sub_total(self):
-        return float(self.total) / 1.18
+        return float(self.total) / (1 + float(self.igv_percent))
 
     def total_as_letters(self):
         return number_to_letters(self.total)
@@ -418,7 +449,7 @@ class OrderDetail(models.Model):
 
     @property
     def prize_net(self):
-        return float(self.unit_price)/1.18
+        return float(self.unit_price)/(1 + float(self.header.igv_percent))
 
     @property
     def igv(self):

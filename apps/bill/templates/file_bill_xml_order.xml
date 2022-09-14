@@ -140,7 +140,7 @@
     {% for detail in bill.order.details_active %}
     <cac:InvoiceLine>
         <cbc:ID>{{ forloop.counter }}</cbc:ID>
-        <cbc:InvoicedQuantity unitCode="PG">{{ detail.quantity  | stringformat:".2f" }}</cbc:InvoicedQuantity>
+        <cbc:InvoicedQuantity unitCode="NIU">{{ detail.quantity  | stringformat:".2f" }}</cbc:InvoicedQuantity>
         <cbc:LineExtensionAmount currencyID="{{ bill.order.currency.code| upper }}">{{ detail.total_no_tax | stringformat:".2f"  }}</cbc:LineExtensionAmount>
         <cac:PricingReference>
             <cac:AlternativeConditionPrice>
@@ -155,7 +155,7 @@
                 <cbc:TaxAmount currencyID="{{ bill.order.currency.code| upper }}">{{ detail.igv_total | stringformat:".2f"  }}</cbc:TaxAmount>
                 <cac:TaxCategory>
                     <cbc:ID schemeID="UN/ECE 5305" schemeName="Tax Category Identifier" schemeAgencyName="United Nations Economic Commission for Europe">S</cbc:ID>
-                    <cbc:Percent>18.00</cbc:Percent>
+                    <cbc:Percent>{{ bill.order.igv_percent_formatted | stringformat:".2f"}}</cbc:Percent>
                     <cbc:TaxExemptionReasonCode>10</cbc:TaxExemptionReasonCode>
                     <cac:TaxScheme>
                         <cbc:ID>1000</cbc:ID>
