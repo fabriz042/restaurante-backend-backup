@@ -531,6 +531,9 @@ class OrderClosedListCreateAPIView(generics.ListCreateAPIView):
     pagination_class = CustomPagination
 
     def get_queryset(self):
+        query_page_size = int(self.request.query_params['page_size']) if 'page_size' in self.request.query_params else 0
+        if query_page_size > 20:
+            self.serializer_class = OrderSerializer
         return Order.objects.select_related(
             'table', 'waiter'
         ).filter(
