@@ -75,7 +75,7 @@ class RoleSerializer(serializers.ModelSerializer):
 class RestaurantSerializer(serializers.ModelSerializer):
     class Meta:
         model = Restaurant
-        fields = ['id', 'name', 'address', 'ruc', 'picture', 'email', 'business_name', 'phone']
+        fields = ['id', 'name', 'address', 'ruc', 'picture', 'email', 'igv_percent', 'business_name', 'phone']
         read_only_fields = ('picture', 'id')
 
 
