@@ -100,7 +100,6 @@
             </cac:PartyLegalEntity>
         </cac:Party>
     </cac:AccountingCustomerParty>
-    {% load bill_extras %}
     <cac:PaymentTerms>
         <cbc:ID>FormaPago</cbc:ID>
         <cbc:PaymentMeansID>Contado</cbc:PaymentMeansID>
@@ -142,7 +141,7 @@
         <cac:TaxTotal>
             <cbc:TaxAmount currencyID="{{ bill.order.currency.code| upper }}">{{ detail.igv_total | stringformat:".2f"  }}</cbc:TaxAmount>
             <cac:TaxSubtotal>
-                <cbc:TaxableAmount currencyID="{{ bill.order.currency.code| upper }}">{{{ detail.total_no_tax | stringformat:".2f"  }}</cbc:TaxableAmount>
+                <cbc:TaxableAmount currencyID="{{ bill.order.currency.code| upper }}">{{ detail.total_no_tax | stringformat:".2f"  }}</cbc:TaxableAmount>
                 <cbc:TaxAmount currencyID="{{ bill.order.currency.code| upper }}">{{ detail.igv_total | stringformat:".2f"  }}</cbc:TaxAmount>
                 <cac:TaxCategory>
                     <!--cbc:ID schemeID="UN/ECE 5305" schemeName="Tax Category Identifier"

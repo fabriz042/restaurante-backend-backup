@@ -357,12 +357,6 @@ class Order(models.Model):
         verbose_name='% IGV',
         blank=True
     )
-    related_order = models.ForeignKey(
-        'self',
-        blank=True,
-        null=True,
-        on_delete=models.CASCADE
-    )
 
     class Meta:
         verbose_name = 'Pedido'
@@ -496,3 +490,55 @@ class Serie(models.Model):
     class Meta:
         verbose_name = 'Serie'
         verbose_name_plural = 'Series'
+
+
+class ReturnedOrder(models.Model):
+    restaurant = models.ForeignKey(
+        Restaurant,
+        on_delete=models.CASCADE,
+        related_name='returned_orders',
+        null=False,
+        verbose_name='Restaurante'
+    )
+    related_order = models.ForeignKey(
+        Order,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE
+    )
+    serie = models.CharField(
+        max_length=10,
+        null=True,
+        blank=True,
+        default=None,
+        verbose_name='Serie'
+    )
+    correlative = models.IntegerField(
+        default=0,
+        null=True,
+        verbose_name='Correlativo'
+    )
+    payment_document = models.ForeignKey(
+        PaymentDocument,
+        null=True,
+        on_delete=models.SET_NULL,
+        default=None,
+        verbose_name='Documento de Pago'
+    )
+    datetime = models.DateTimeField(
+        null=False,
+        verbose_name='Hora'
+    )
+    is_active = models.BooleanField(
+        default=True,
+        null=False,
+        verbose_name='Activo'
+    )
+
+    class Meta:
+        verbose_name = 'Pedido Devuelto'
+        verbose_name_plural = 'Pedidos Devueltos'
+
+    @property
+    def total(self):
+        return self.related_order.total

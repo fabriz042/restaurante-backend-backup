@@ -1,23 +1,15 @@
 import io
-from pathlib import Path
-
 import OpenSSL.crypto
 import pem
-import requests
 from OpenSSL import crypto
-from django.core.files.base import ContentFile
 from rest_framework import generics, status
 from apps.bill.services import Services
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from zeep import Client
-from zeep.wsse import UsernameToken
-
-from apps.bill.adapters import BillToXMLSenderAdapter
-from apps.bill.models import BillingSetting, BillOrder
-from apps.bill.serializers import BillingSettingSerializer, BillSettingsCertificateSerializer, BillOrderSerializer
-from apps.operations.models import Order
+from apps.bill.models import BillingSetting, Bill, BillOrder, BillReturnedOrder
+from apps.bill.serializers import BillingSettingSerializer, BillSettingsCertificateSerializer, BillOrderSerializer, BillReturnedOrderSerializer
+from apps.operations.models import Order, ReturnedOrder
 from restaurant.permissions import DjangoModelPermissionsWithRead
 
 
@@ -104,7 +96,8 @@ class BillOrderServiceAPIView(generics.ListCreateAPIView):
             raise ValidationError({'info': str(e)})
 
     @staticmethod
-    def validate(bill: BillOrder):
+    def validate(bill: Bill):
+        print(bill)
         if not hasattr(bill.order.restaurant, 'billing_settings'):
             raise ValidationError({
                 'detail': 'No se ha configurado la configuración de facturación'
@@ -113,3 +106,19 @@ class BillOrderServiceAPIView(generics.ListCreateAPIView):
             raise ValidationError({
                 'detail': 'No se ha configurado el certificado para SUNAT'
             })
+
+
+class BillReturnedOrderServiceAPIView(BillOrderServiceAPIView):
+    serializer_class = BillReturnedOrderSerializer
+    queryset = BillReturnedOrder.objects.all()
+
+    def get_object(self):
+        pk = int(self.request.parser_context.get('kwargs')['pk'])
+        returned_order = get_object_or_404(
+            ReturnedOrder.objects.filter(
+                restaurant=self.request.user.profile.restaurant),
+            pk=pk
+        )
+        return BillReturnedOrder.objects.get_or_create(
+            order=returned_order
+        )[0]

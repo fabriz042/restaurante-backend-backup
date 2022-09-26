@@ -52,7 +52,6 @@ class BillToXMLAdapter:
 
 
 class BillOrderToXMLAdapter(BillToXMLAdapter):
-    # template_name = 'file_bill_xml_order.xml'
 
     def __init__(self, order, settings):
         template_name = 'file_bill_xml_order.xml'

@@ -15,40 +15,40 @@
     </ext:UBLExtensions>
     <cbc:UBLVersionID>2.1</cbc:UBLVersionID>
     <cbc:CustomizationID schemeAgencyName="PE:SUNAT">2.0</cbc:CustomizationID>
-    <cbc:ID>{{bill.id_char}}</cbc:ID>
-    <cbc:IssueDate>{{ bill.sell.issueDate |date:"Y-m-d" }}</cbc:IssueDate>
+    <cbc:ID>{{bill.bill_name}}</cbc:ID>
+    <cbc:IssueDate>{{ bill.order.datetime |date:"Y-m-d" }}</cbc:IssueDate>
     {% load tz %}
-    <cbc:IssueTime>{{ bill.sell.issueDate | localtime|date:"H:i:s" }}</cbc:IssueTime>
-    <cbc:DocumentCurrencyCode>{{ bill.sell.coin.code| upper }}</cbc:DocumentCurrencyCode>
+    <cbc:IssueTime>{{ bill.order.datetime | localtime|date:"H:i:s" }}</cbc:IssueTime>
+    <cbc:DocumentCurrencyCode>{{ bill.order.related_order.currency.code| upper }}</cbc:DocumentCurrencyCode>
     <!---->
     <cac:DiscrepancyResponse>
-        <cbc:ReferenceID>{{bill.id_char}}</cbc:ReferenceID>
+        <cbc:ReferenceID>{{bill.bill_name}}</cbc:ReferenceID>
         <cbc:ResponseCode>01</cbc:ResponseCode>
         <cbc:Description>ANULACIÓN DE LA OPERACIÓN</cbc:Description>
     </cac:DiscrepancyResponse>
     <cac:BillingReference>
         <cac:InvoiceDocumentReference>
-            <cbc:ID>{{bill.sell.relates_to.serie}}-{{bill.sell.relates_to.correlative}}</cbc:ID>
-            <cbc:DocumentTypeCode>{{bill.sell.relates_to.documentType.sunat_code}}</cbc:DocumentTypeCode>
+            <cbc:ID>{{bill.order.related_order.serie}}-{{bill.order.related_order.correlative}}</cbc:ID>
+            <cbc:DocumentTypeCode>0{{bill.order.related_order.payment_document.electronic_document}}</cbc:DocumentTypeCode>
         </cac:InvoiceDocumentReference>
     </cac:BillingReference>
     <!---->
     <cac:Signature>
-        <cbc:ID>{{bill.id_char}}</cbc:ID>
+        <cbc:ID>{{bill.bill_name}}</cbc:ID>
         <cac:SignatoryParty>
-            <cac:PartyIdentification><cbc:ID>{{settings.RUC}}</cbc:ID></cac:PartyIdentification>
+            <cac:PartyIdentification><cbc:ID>{{bill.order.restaurant.ruc}}</cbc:ID></cac:PartyIdentification>
             <cac:PartyName>
-                <cbc:Name><![CDATA[{{ settings.enterprise_name }}]]></cbc:Name>
+                <cbc:Name><![CDATA[{{ bill.order.restaurant.business_name }}]]></cbc:Name>
             </cac:PartyName>
         </cac:SignatoryParty>
         <cac:DigitalSignatureAttachment>
             <cac:ExternalReference>
-                <cbc:URI>{{settings.RUC}}</cbc:URI>
+                <cbc:URI>{{bill.bill_name}}</cbc:URI>
             </cac:ExternalReference>
         </cac:DigitalSignatureAttachment>
     </cac:Signature>
     <cac:AccountingSupplierParty>
-        <cbc:CustomerAssignedAccountID>{{ settings.RUC }}</cbc:CustomerAssignedAccountID>
+        <cbc:CustomerAssignedAccountID>{{ bill.order.restaurant.ruc }}</cbc:CustomerAssignedAccountID>
         <cbc:AdditionalAccountID>6</cbc:AdditionalAccountID>
         <cac:Party>
             <cac:PartyIdentification>
@@ -57,49 +57,49 @@
                 <cbc:ID schemeID="6"
                         schemeName="Documento de Identidad"
                         schemeAgencyName="PE:SUNAT"
-                        schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06">{{settings.RUC}}</cbc:ID>
+                        schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06">{{bill.order.restaurant.ruc}}</cbc:ID>
             </cac:PartyIdentification>
             <cac:PartyName>
-                <cbc:Name><![CDATA[{{ settings.enterprise_name }}]]></cbc:Name>
+                <cbc:Name><![CDATA[{{ bill.order.restaurant.business_name }}]]></cbc:Name>
             </cac:PartyName>
             <cac:PartyTaxScheme>
-                <cbc:RegistrationName><![CDATA[{{ settings.sunat_name }}]]></cbc:RegistrationName>
+                <cbc:RegistrationName><![CDATA[{{ bill.order.restaurant.business_name }}]]></cbc:RegistrationName>
                 <cbc:CompanyID schemeID="6" schemeName="SUNAT:Identificador de Documento de Identidad"
                                schemeAgencyName="PE:SUNAT"
-                               schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06">{{ settings.RUC }}
+                               schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06">{{ bill.order.restaurant.ruc }}
                 </cbc:CompanyID>
                 <cac:TaxScheme>
-                    <cbc:ID>{{settings.RUC}}</cbc:ID>
+                    <cbc:ID>{{bill.order.restaurant.ruc}}</cbc:ID>
                 </cac:TaxScheme>
             </cac:PartyTaxScheme>
             <cac:PartyLegalEntity>
-                <cbc:RegistrationName>{{ settings.sunat_name }}</cbc:RegistrationName>
+                <cbc:RegistrationName>{{ bill.order.restaurant.business_name }}</cbc:RegistrationName>
                 <cac:RegistrationAddress>
-                    <cbc:AddressTypeCode>0000<!--{{ settings.location_code }}--></cbc:AddressTypeCode>
+                    <cbc:AddressTypeCode>{{ bill.order.restaurant.billing_settings.location_code }}</cbc:AddressTypeCode>
                 </cac:RegistrationAddress>
             </cac:PartyLegalEntity>
         </cac:Party>
     </cac:AccountingSupplierParty>
     <cac:AccountingCustomerParty>
-        <cbc:CustomerAssignedAccountID>{{ bill.client.document }}</cbc:CustomerAssignedAccountID>
-        <cbc:AdditionalAccountID>{{ bill.document_type_client.code }}</cbc:AdditionalAccountID>
+        <cbc:CustomerAssignedAccountID>{{ bill.order.related_order.client.document }}</cbc:CustomerAssignedAccountID>
+        <cbc:AdditionalAccountID>{{ bill.order.related_order.client.document_type.code }}</cbc:AdditionalAccountID>
         <cac:Party>
             <cac:PartyIdentification>
                 <!-- Documento del receptor -->
                 <!-- Tipo documento: @schemeID = 6 (RUC - Catálogo 06) -->
-                <cbc:ID schemeID="{{bill.document_type_client.code}}"
+                <cbc:ID schemeID="{{bill.order.related_order.client.document_type.code}}"
                         schemeName="Documento de Identidad"
                         schemeAgencyName="PE:SUNAT"
-                        schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06">{{bill.client.document}}</cbc:ID>
+                        schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06">{{bill.order.related_order.client.document}}</cbc:ID>
             </cac:PartyIdentification>
             <cac:PartyLegalEntity>
                 <!-- Razon social del receptor -->
-                <cbc:RegistrationName><![CDATA[{{bill.client.name}}]]></cbc:RegistrationName>
+                <cbc:RegistrationName><![CDATA[{{bill.order.related_order.client.name}}]]></cbc:RegistrationName>
                 <cac:RegistrationAddress>
                     <cbc:ID>040801</cbc:ID>
                     <cac:AddressLine>
                         <!-- Dirección completa del receptor -->
-                        <cbc:Line><![CDATA[{{bill.client.address}}]]></cbc:Line>
+                        <cbc:Line><![CDATA[{{bill.order.related_order.client.address}}]]></cbc:Line>
                     </cac:AddressLine>
                     <cac:Country>
                         <!-- Codigo del pais -->
@@ -111,12 +111,11 @@
             </cac:PartyLegalEntity>
         </cac:Party>
     </cac:AccountingCustomerParty>
-    {% load bill_extras %}
     <cac:TaxTotal>
-        <cbc:TaxAmount currencyID="{{ bill.sell.coin.code| upper }}">{{ bill.tax | floatformat:2 }}</cbc:TaxAmount>
+        <cbc:TaxAmount currencyID="{{ bill.order.related_order.currency.code| upper }}">{{ bill.order.related_order.igv | stringformat:".2f" }}</cbc:TaxAmount>
         <cac:TaxSubtotal>
-            <cbc:TaxableAmount currencyID="{{ bill.sell.coin.code| upper }}">{{ bill.amount | floatformat:2 }}</cbc:TaxableAmount>
-            <cbc:TaxAmount currencyID="{{ bill.sell.coin.code| upper }}">{{ bill.tax | floatformat:2 }}</cbc:TaxAmount>
+            <cbc:TaxableAmount currencyID="{{ bill.order.related_order.currency.code| upper }}">{{ bill.order.related_order.sub_total | stringformat:".2f" }}</cbc:TaxableAmount>
+            <cbc:TaxAmount currencyID="{{ bill.order.related_order.currency.code| upper }}">{{ bill.order.related_order.igv | stringformat:".2f" }}</cbc:TaxAmount>
             <cac:TaxCategory>
                 <cac:TaxScheme>
                     <cbc:ID schemeName="Codigo de tributos" schemeAgencyName="PE:SUNAT" schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo05">1000</cbc:ID>
@@ -127,30 +126,30 @@
         </cac:TaxSubtotal>
     </cac:TaxTotal>
     <cac:LegalMonetaryTotal>
-        <cbc:LineExtensionAmount currencyID="{{ bill.sell.coin.code| upper }}">{{ bill.amount | floatformat:2 }}</cbc:LineExtensionAmount>
-        <cbc:TaxInclusiveAmount currencyID="{{ bill.sell.coin.code| upper }}">{{ bill.tax |add:bill.amount | floatformat:2 }}</cbc:TaxInclusiveAmount>
-        <cbc:AllowanceTotalAmount currencyID="{{ bill.sell.coin.code| upper }}">{{ bill.sell.totalDiscount | floatformat:2 }}</cbc:AllowanceTotalAmount>
-        <cbc:ChargeTotalAmount currencyID="{{ bill.sell.coin.code| upper }}">{{ 0 | floatformat:2 }}</cbc:ChargeTotalAmount>
-        <cbc:PayableAmount currencyID="{{ bill.sell.coin.code| upper }}">{{ bill.amount|add:bill.tax |res:bill.sell.totalDiscount | floatformat:2 }}</cbc:PayableAmount>
+        <cbc:LineExtensionAmount currencyID="{{ bill.order.related_order.currency.code| upper }}">{{ bill.order.related_order.sub_total | stringformat:".2f" }}</cbc:LineExtensionAmount>
+        <cbc:TaxInclusiveAmount currencyID="{{ bill.order.related_order.currency.code| upper }}">{{ bill.order.related_order.total | stringformat:".2f" }}</cbc:TaxInclusiveAmount>
+        <cbc:AllowanceTotalAmount currencyID="{{ bill.order.related_order.currency.code| upper }}">{{ 0| stringformat:".2f" }}</cbc:AllowanceTotalAmount>
+        <cbc:ChargeTotalAmount currencyID="{{ bill.order.related_order.currency.code| upper }}">{{ 0 | stringformat:".2f" }}</cbc:ChargeTotalAmount>
+        <cbc:PayableAmount currencyID="{{ bill.order.related_order.currency.code| upper }}">{{ bill.order.related_order.total | stringformat:".2f" }}</cbc:PayableAmount>
     </cac:LegalMonetaryTotal>
-    {% for detail in bill.details %}
+    {% for detail in bill.order.related_order.details_active %}
     <cac:CreditNoteLine>
         <cbc:ID>{{ forloop.counter }}</cbc:ID>
-        <cbc:CreditedQuantity unitCode="{{ detail.product.unit.isocode }}">{{ detail.quantity | floatformat:2 }}</cbc:CreditedQuantity>
-        <cbc:LineExtensionAmount currencyID="{{ bill.sell.coin.code| upper }}">{{ detail.total | floatformat:2 }}</cbc:LineExtensionAmount>
+        <cbc:CreditedQuantity unitCode="NIU">{{ detail.quantity | stringformat:".2f" }}</cbc:CreditedQuantity>
+        <cbc:LineExtensionAmount currencyID="{{ bill.order.related_order.currency.code| upper }}">{{ detail.total_no_tax | stringformat:".2f" }}</cbc:LineExtensionAmount>
         <cac:PricingReference>
             <cac:AlternativeConditionPrice>
-                <cbc:PriceAmount currencyID="PEN">{{ detail.total |add:detail.igv |div:detail.quantity | floatformat:2 }}</cbc:PriceAmount>
+                <cbc:PriceAmount currencyID="{{ bill.order.related_order.currency.code| upper }}">{{ detail.unit_price | stringformat:".2f"  }}</cbc:PriceAmount>
                 <cbc:PriceTypeCode>01</cbc:PriceTypeCode>
             </cac:AlternativeConditionPrice>
         </cac:PricingReference>
         <cac:TaxTotal>
-            <cbc:TaxAmount currencyID="{{ bill.sell.coin.code| upper }}">{{ detail.igv | floatformat:2 }}</cbc:TaxAmount>
+            <cbc:TaxAmount currencyID="{{ bill.order.related_order.currency.code| upper }}">{{ detail.igv_total | stringformat:".2f" }}</cbc:TaxAmount>
             <cac:TaxSubtotal>
-                <cbc:TaxableAmount currencyID="{{ bill.sell.coin.code| upper }}">{{ detail.total | floatformat:2 }}</cbc:TaxableAmount>
-                <cbc:TaxAmount currencyID="{{ bill.sell.coin.code| upper }}">{{ detail.igv | floatformat:2 }}</cbc:TaxAmount>
+                <cbc:TaxableAmount currencyID="{{ bill.order.related_order.currency.code| upper }}">{{ detail.total_no_tax | stringformat:".2f" }}</cbc:TaxableAmount>
+                <cbc:TaxAmount currencyID="{{ bill.order.related_order.currency.code| upper }}">{{ detail.igv_total | stringformat:".2f" }}</cbc:TaxAmount>
                 <cac:TaxCategory>
-                    <cbc:Percent>{{ detail.igv |div:detail.total |mul:100 | floatformat:1 }}</cbc:Percent>
+                    <cbc:Percent>{{ bill.order.related_order.igv_percent_formatted | stringformat:".2f"}}</cbc:Percent>
                     <cbc:TaxExemptionReasonCode>10</cbc:TaxExemptionReasonCode>
                     <cac:TaxScheme>
                         <cbc:ID schemeName="Codigo de tributos" schemeAgencyName="PE:SUNAT" schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo05">1000</cbc:ID>
@@ -161,13 +160,13 @@
             </cac:TaxSubtotal>
         </cac:TaxTotal>
         <cac:Item>
-            <cbc:Description><![CDATA[{{ detail.product.name }}]]></cbc:Description>
+            <cbc:Description><![CDATA[{{ detail.menu_item.menu_item_name }}]]></cbc:Description>
             <cac:SellersItemIdentification>
-                <cbc:ID>{{ detail.product.id }}</cbc:ID>
+                <cbc:ID>{{ detail.menu_item.id }}</cbc:ID>
             </cac:SellersItemIdentification>
         </cac:Item>
         <cac:Price>
-            <cbc:PriceAmount currencyID="{{ bill.sell.coin.code| upper }}">{{ detail.unitaryCost | floatformat:2 }}</cbc:PriceAmount>
+            <cbc:PriceAmount currencyID="{{ bill.order.related_order.currency.code| upper }}">{{ detail.prize_net | stringformat:".2f" }}</cbc:PriceAmount>
         </cac:Price>
     </cac:CreditNoteLine>
     {% endfor %}

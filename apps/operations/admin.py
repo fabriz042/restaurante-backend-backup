@@ -2,7 +2,7 @@ from django.contrib import admin
 
 # Register your models here.
 from apps.accounts.admin import PurchaseTabularInLine
-from apps.operations.models import PaymentType, Purchase, PurchaseDetail, Order, PaymentDocument, Serie, OrderDetail
+from apps.operations.models import PaymentType, Purchase, PurchaseDetail, Order, PaymentDocument, Serie, OrderDetail, ReturnedOrder
 from apps.payments.models import Payment
 
 
@@ -115,6 +115,9 @@ class OrderAdmin(admin.ModelAdmin):
         'id',
         'restaurant',
         'table',
+        'serie',
+        'correlative',
+        'total',
         'start_datetime',
         'end_datetime',
         'waiter',
@@ -131,9 +134,30 @@ class OrderAdmin(admin.ModelAdmin):
     ]
 
 
+class ReturnedOrderAdmin(admin.ModelAdmin):
+    list_display = [
+        'id',
+        'restaurant',
+        'related_order',
+        'serie',
+        'correlative',
+        'total',
+        'datetime',
+        'is_active',
+    ]
+    list_filter = [
+        'restaurant',
+        'is_active'
+    ]
+    search_fields = [
+        # 'name',
+    ]
+
+
 admin.site.register(PaymentType, PaymentTypeAdmin)
 admin.site.register(Purchase, PurchaseAdmin)
 admin.site.register(Order, OrderAdmin)
 admin.site.register(PaymentDocument, PaymentDocumentAdmin)
 admin.site.register(Serie, SerieAdmin)
 admin.site.register(OrderDetail)
+admin.site.register(ReturnedOrder, ReturnedOrderAdmin)

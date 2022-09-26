@@ -5,7 +5,7 @@ from apps.client.serializers import ClientSerializer
 from apps.currency.serializers import CurrencySerializer
 from apps.hall.serializers import TableSerializer
 from apps.menu.serializers import MenuItemSerializer
-from apps.operations.models import PaymentType, Purchase, PurchaseDetail, Order, OrderDetail, PaymentDocument, Serie
+from apps.operations.models import PaymentType, Purchase, PurchaseDetail, Order, OrderDetail, PaymentDocument, Serie, ReturnedOrder
 from apps.product.serializers import ProductSerializer
 from apps.provider.serializers import ProviderSerializer
 from apps.warehouse.models import WarehouseMovement
@@ -77,7 +77,6 @@ class OrderSerializer(serializers.ModelSerializer):
             'payment_document',
             'client',
             'igv_percent',
-            'related_order',
             'is_active'
         ]
         read_only_fields = ('is_active', 'id')
@@ -108,7 +107,13 @@ class OrderSunatSerializer(OrderSerializer):
                 consult_service = Services(settings=instance.restaurant.billing_settings).consult_bill(instance)
                 data['sunat_info'] = consult_service['message'] if 'message' in consult_service else None
                 data['sunat_code'] = consult_service['code'] if 'code' in consult_service else None
-        data['has_credit_note'] = None
+        try:
+            data['bill_order'] = instance.billorder.id
+        except Order.billorder.RelatedObjectDoesNotExist:
+            data['bill_order'] = None
+
+        has_returned_order = ReturnedOrder.objects.filter(related_order_id=instance.id).first()
+        data['has_bill_annulation_order'] = True if has_returned_order else False
         return data
 
 
@@ -176,4 +181,39 @@ class SerieSerializer(serializers.ModelSerializer):
         data = super(SerieSerializer, self).to_representation(instance)
         if instance.payment_document:
             data['payment_document'] = PaymentDocumentSerializer(instance.payment_document).data
+        return data
+
+
+class ReturnedOrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReturnedOrder
+        fields = [
+            'related_order',
+            'serie',
+            'correlative',
+            'payment_document',
+            'datetime'
+        ]
+        read_only_fields = ('is_active', 'id')
+
+    def to_representation(self, instance):
+        data = super(ReturnedOrderSerializer, self).to_representation(instance)
+        data['related_order_data'] = OrderExtendedSerializer(instance.related_order).data
+        if instance.payment_document:
+            data['payment_document_data'] = PaymentDocumentSerializer(instance.payment_document).data
+        return data
+
+
+class ReturnedOrderSunatSerializer(ReturnedOrderSerializer):
+    def to_representation(self, instance):
+        data = super(ReturnedOrderSunatSerializer, self).to_representation(instance)
+        if instance.payment_document:
+            if instance.payment_document.electronic_document > 0:
+                consult_service = Services(settings=instance.restaurant.billing_settings).consult_bill(instance)
+                data['sunat_info'] = consult_service['message'] if 'message' in consult_service else None
+                data['sunat_code'] = consult_service['code'] if 'code' in consult_service else None
+        try:
+            data['bill_returned_order'] = instance.billreturnedorder.id
+        except Order.billorder.RelatedObjectDoesNotExist:
+            data['bill_returned_order'] = None
         return data

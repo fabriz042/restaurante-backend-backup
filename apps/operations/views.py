@@ -1,5 +1,5 @@
 import datetime
-from io import StringIO, BytesIO
+from io import BytesIO
 from django_filters import rest_framework as filters
 import pytz
 from django.conf import settings
@@ -7,20 +7,17 @@ from django.db.models import Sum
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django_filters.rest_framework import DjangoFilterBackend
-from django_xhtml2pdf.utils import generate_pdf
 from rest_framework import generics
-
-# Create your views here.
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from xhtml2pdf import pisa
-
 from apps.hall.models import Table
 from apps.menu.models import MenuProduct, MenuRecipe
 from apps.operations.filter import OrderFilter, PaymentDocumentFilter
-from apps.operations.models import PaymentType, Purchase, PurchaseDetail, Order, OrderDetail, PaymentDocument, Serie
+from apps.operations.models import PaymentType, Purchase, PurchaseDetail, Order, OrderDetail, PaymentDocument, Serie, \
+    ReturnedOrder
 from apps.operations.serializers import PaymentTypeSerializer, PurchaseSerializer, PurchaseDetailSerializer, \
-    OrderSerializer, OrderDetailSerializer, OrderExtendedSerializer, PaymentDocumentSerializer, SerieSerializer, OrderSunatSerializer
+    OrderSerializer, OrderDetailSerializer, OrderExtendedSerializer, PaymentDocumentSerializer, SerieSerializer, OrderSunatSerializer, ReturnedOrderSerializer, ReturnedOrderSunatSerializer
 from apps.warehouse.models import WarehouseMovement
 from apps.warehouse.serializers import WarehouseMovementSerializer
 from restaurant.permissions import DjangoModelPermissionsWithRead
@@ -149,7 +146,7 @@ class PurchaseDetailRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyA
             data=movement_data
         )
         movement_serializer.is_valid(raise_exception=True)
-        movement = movement_serializer.save()
+        movement_serializer.save()
         serializer.save()
 
 
@@ -215,8 +212,8 @@ class OrderRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
             detail.movements.all().update(is_active=False)
 
     def perform_update(self, serializer):
-        prev_instance = self.get_object()
-        instance = serializer.save()
+        self.get_object()
+        serializer.save()
 
 
 class OrderDetailListCreateAPIView(generics.ListCreateAPIView):
@@ -257,7 +254,7 @@ class OrderDetailListCreateAPIView(generics.ListCreateAPIView):
         instance = serializer.save()
         instance.unit_price = instance.menu_item.sell_price
         instance.save()
-        CloseOrderAPIView.make_movements_per_detail(instance)  # stock discount
+        make_movements_per_detail(instance)  # stock discount
 
 
 class OrderDetailRetrieveDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
@@ -280,35 +277,6 @@ class OrderDetailRetrieveDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
             menu_recipe = menu_recipes[0]
             menu_recipe.daily_quantity += instance.quantity
             menu_recipe.save()
-
-    @staticmethod
-    def make_movements_per_detail(instance):
-        is_product = MenuProduct.objects.filter(id=instance.menu_item.id)
-        is_recipe = MenuRecipe.objects.filter(id=instance.menu_item.id)
-        movements = []
-        if len(is_product) > 0:
-            movement = WarehouseMovement(
-                restaurant=instance.header.restaurant,
-                warehouse=instance.menu_item.warehouse,
-                quantity=instance.quantity,
-                product=is_product[0].product
-            )
-            movement.save()
-            instance.movements.add(movement)
-            instance.save()
-        if len(is_recipe) > 0:
-            for recipe_detail in is_recipe[0].recipe.details.all():
-                movement = WarehouseMovement(
-                    restaurant=instance.header.restaurant,
-                    warehouse=instance.menu_item.warehouse,
-                    quantity=instance.quantity * recipe_detail.quantity,
-                    product=recipe_detail.product
-                )
-                movement.save()
-                instance.movements.add(movement)
-                instance.save()
-                movements.append(movement)
-        return movements
 
 
 class OrderDetailMakeMovementsAPIViews(generics.UpdateAPIView):
@@ -606,34 +574,35 @@ class CloseOrderAPIView(generics.UpdateAPIView):
         order.table.save()
         return Response(status=200)
 
-    @staticmethod
-    def make_movements_per_detail(instance):
-        is_product = MenuProduct.objects.filter(id=instance.menu_item.id)
-        is_recipe = MenuRecipe.objects.filter(id=instance.menu_item.id)
-        movements = []
-        if len(is_product) > 0:
+
+def make_movements_per_detail(instance, positive=False):
+    criteria = -1 if not positive else 1
+    is_product = MenuProduct.objects.filter(id=instance.menu_item.id)
+    is_recipe = MenuRecipe.objects.filter(id=instance.menu_item.id)
+    movements = []
+    if len(is_product) > 0:
+        movement = WarehouseMovement(
+            restaurant=instance.header.restaurant,
+            warehouse=instance.menu_item.warehouse,
+            quantity=instance.quantity * criteria,
+            product=is_product[0].product
+        )
+        movement.save()
+        instance.movements.add(movement)
+        instance.save()
+    if len(is_recipe) > 0:
+        for recipe_detail in is_recipe[0].recipe.details.all():
             movement = WarehouseMovement(
                 restaurant=instance.header.restaurant,
                 warehouse=instance.menu_item.warehouse,
-                quantity=instance.quantity * -1,
-                product=is_product[0].product
+                quantity=instance.quantity * recipe_detail.quantity * criteria,
+                product=recipe_detail.product
             )
             movement.save()
             instance.movements.add(movement)
             instance.save()
-        if len(is_recipe) > 0:
-            for recipe_detail in is_recipe[0].recipe.details.all():
-                movement = WarehouseMovement(
-                    restaurant=instance.header.restaurant,
-                    warehouse=instance.menu_item.warehouse,
-                    quantity=instance.quantity * recipe_detail.quantity * -1,
-                    product=recipe_detail.product
-                )
-                movement.save()
-                instance.movements.add(movement)
-                instance.save()
-                movements.append(movement)
-        return movements
+            movements.append(movement)
+    return movements
 
 
 class CloseAllOrderAPIView(generics.CreateAPIView):
@@ -657,3 +626,43 @@ class CloseAllOrderAPIView(generics.CreateAPIView):
             order.table.save()
         orders.update(end_datetime=datetime.datetime.now(tz=pytz.timezone(settings.TIME_ZONE)))
         return Response(status=200)
+
+
+class ReturnedOrderListCreateAPIView(generics.ListCreateAPIView):
+    serializer_class = ReturnedOrderSunatSerializer
+    pagination_class = CustomPagination
+
+    def get_queryset(self):
+        query_page_size = int(self.request.query_params['page_size']) if 'page_size' in self.request.query_params else 0
+        if query_page_size > 20:
+            self.serializer_class = ReturnedOrderSerializer
+        return ReturnedOrder.objects.select_related(
+            'related_order__table', 'related_order__waiter').filter(
+            is_active=True,
+            restaurant__user_profiles__user=self.request.user
+        ).order_by('-id')
+
+    def perform_create(self, serializer):
+        instance = serializer.save(
+            restaurant=self.request.user.profile.restaurant
+        )
+        for detail in instance.related_order.details:
+            make_movements_per_detail(detail, positive=True)
+
+
+class ReturnedOrderRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = ReturnedOrderSunatSerializer
+    permission_classes = [DjangoModelPermissionsWithRead]
+
+    def get_queryset(self):
+        return ReturnedOrder.objects.select_related(
+            'related_order__table', 'related_order__waiter').filter(
+            is_active=True,
+            restaurant__user_profiles__user=self.request.user
+        ).order_by('-id')
+
+    def perform_destroy(self, instance):
+        instance.is_active = False
+        instance.save()
+        for detail in instance.related_order.details:
+            make_movements_per_detail(detail)

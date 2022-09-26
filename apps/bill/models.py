@@ -9,7 +9,7 @@ from django.db import models
 from apps.accounts.models import Restaurant
 from apps.bill.adapters import BillOrderToXMLAdapter
 from apps.bill.storage import OverwriteStorage
-from apps.operations.models import Order
+from apps.operations.models import Order, ReturnedOrder
 
 
 class BillingSetting(models.Model):
@@ -139,18 +139,6 @@ class Bill(models.Model):
     )
 
     def write_xml(self):
-        pass
-
-
-class BillOrder(Bill):
-    order = models.OneToOneField(
-        Order,
-        on_delete=models.CASCADE,
-        verbose_name='Pedido',
-        null=False
-    )
-
-    def write_xml(self):
         adapter = BillOrderToXMLAdapter(self, self.order.restaurant.billing_settings)
         file_content = adapter.build_file()
         self.xml_file.save(
@@ -189,3 +177,21 @@ class BillOrder(Bill):
             zip_object = ZipFile(self.response_zip_file.path)
             self.response_xml_file.save('R-' + self.filename + '.xml', zip_object.open('R-'+self.filename + '.xml'))
             zip_object.close()
+
+
+class BillOrder(Bill):
+    order = models.OneToOneField(
+        Order,
+        on_delete=models.CASCADE,
+        verbose_name='Pedido',
+        null=False
+    )
+
+
+class BillReturnedOrder(Bill):
+    order = models.OneToOneField(
+        ReturnedOrder,
+        on_delete=models.CASCADE,
+        verbose_name='Pedido Devuelto',
+        null=False
+    )

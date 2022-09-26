@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.bill.models import BillingSetting, BillOrder
+from apps.bill.models import BillingSetting, BillOrder, BillReturnedOrder
 
 
 class BillingSettingSerializer(serializers.ModelSerializer):
@@ -25,4 +25,10 @@ class BillSettingsCertificateSerializer(serializers.ModelSerializer):
 class BillOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = BillOrder
+        fields = '__all__'
+
+
+class BillReturnedOrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BillReturnedOrder
         fields = '__all__'
