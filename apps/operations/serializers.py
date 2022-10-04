@@ -188,13 +188,14 @@ class ReturnedOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReturnedOrder
         fields = [
+            'id',
             'related_order',
             'serie',
             'correlative',
             'payment_document',
             'datetime'
         ]
-        read_only_fields = ('is_active', 'id')
+        read_only_fields = ('is_active', )
 
     def to_representation(self, instance):
         data = super(ReturnedOrderSerializer, self).to_representation(instance)
