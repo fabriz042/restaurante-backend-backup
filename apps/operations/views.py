@@ -646,7 +646,7 @@ class ReturnedOrderListCreateAPIView(generics.ListCreateAPIView):
         instance = serializer.save(
             restaurant=self.request.user.profile.restaurant
         )
-        for detail in instance.related_order.details:
+        for detail in instance.related_order.details.all():
             make_movements_per_detail(detail, positive=True)
 
 

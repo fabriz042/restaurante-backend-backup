@@ -215,6 +215,6 @@ class ReturnedOrderSunatSerializer(ReturnedOrderSerializer):
                 data['sunat_code'] = consult_service['code'] if 'code' in consult_service else None
         try:
             data['bill_returned_order'] = instance.billreturnedorder.id
-        except Order.billorder.RelatedObjectDoesNotExist:
+        except ReturnedOrder.billreturnedorder.RelatedObjectDoesNotExist:
             data['bill_returned_order'] = None
         return data
