@@ -664,5 +664,5 @@ class ReturnedOrderRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAP
     def perform_destroy(self, instance):
         instance.is_active = False
         instance.save()
-        for detail in instance.related_order.details:
+        for detail in instance.related_order.details.all():
             make_movements_per_detail(detail)
