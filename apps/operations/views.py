@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from xhtml2pdf import pisa
 from apps.hall.models import Table
 from apps.menu.models import MenuProduct, MenuRecipe
-from apps.operations.filter import OrderFilter, PaymentDocumentFilter, ReturnedOrderFilter
+from apps.operations.filter import OrderFilter, PaymentDocumentFilter, ReturnedOrderFilter, SerieFilter
 from apps.operations.models import PaymentType, Purchase, PurchaseDetail, Order, OrderDetail, PaymentDocument, Serie, \
     ReturnedOrder
 from apps.operations.serializers import PaymentTypeSerializer, PurchaseSerializer, PurchaseDetailSerializer, \
@@ -458,9 +458,7 @@ class SerieListCreateAPIView(generics.ListCreateAPIView):
     filter_backends = [
         DjangoFilterBackend
     ]
-    filterset_fields = [
-        'payment_document'
-    ]
+    filterset_class = SerieFilter
 
     def get_queryset(self):
         return Serie.objects.filter(

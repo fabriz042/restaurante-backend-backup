@@ -1,7 +1,7 @@
 import django_filters
 from django_filters.rest_framework import FilterSet
 
-from apps.operations.models import Order, PaymentDocument, ReturnedOrder
+from apps.operations.models import Order, PaymentDocument, ReturnedOrder, Serie
 
 
 class OrderFilter(FilterSet):
@@ -40,5 +40,15 @@ class ReturnedOrderFilter(FilterSet):
         model = ReturnedOrder
         fields = [
             'related_order',
+            'payment_document'
+        ]
+
+
+class SerieFilter(FilterSet):
+    code = django_filters.CharFilter(field_name='code', lookup_expr='icontains')
+
+    class Meta:
+        model = Serie
+        fields = [
             'payment_document'
         ]
