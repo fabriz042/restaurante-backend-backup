@@ -1,7 +1,7 @@
 import django_filters
 from django_filters.rest_framework import FilterSet
 
-from apps.operations.models import Order, PaymentDocument
+from apps.operations.models import Order, PaymentDocument, ReturnedOrder
 
 
 class OrderFilter(FilterSet):
@@ -29,4 +29,16 @@ class PaymentDocumentFilter(FilterSet):
             'cancel_sale',
             'require_serie',
             'is_cancelable',
+        ]
+
+
+class ReturnedOrderFilter(FilterSet):
+    start_date = django_filters.DateFilter(field_name='datetime__date', lookup_expr='gte')
+    end_date = django_filters.DateFilter(field_name='datetime__date', lookup_expr='lte')
+
+    class Meta:
+        model = ReturnedOrder
+        fields = [
+            'related_order',
+            'payment_document'
         ]

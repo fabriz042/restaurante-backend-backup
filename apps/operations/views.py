@@ -631,6 +631,10 @@ class CloseAllOrderAPIView(generics.CreateAPIView):
 class ReturnedOrderListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = ReturnedOrderSunatSerializer
     pagination_class = CustomPagination
+    filter_backends = [
+        DjangoFilterBackend
+    ]
+    filterset_class = OrderFilter
 
     def get_queryset(self):
         query_page_size = int(self.request.query_params['page_size']) if 'page_size' in self.request.query_params else 0
