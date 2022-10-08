@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from xhtml2pdf import pisa
 from apps.hall.models import Table
 from apps.menu.models import MenuProduct, MenuRecipe
-from apps.operations.filter import OrderFilter, PaymentDocumentFilter
+from apps.operations.filter import OrderFilter, PaymentDocumentFilter, ReturnedOrderFilter
 from apps.operations.models import PaymentType, Purchase, PurchaseDetail, Order, OrderDetail, PaymentDocument, Serie, \
     ReturnedOrder
 from apps.operations.serializers import PaymentTypeSerializer, PurchaseSerializer, PurchaseDetailSerializer, \
@@ -634,7 +634,7 @@ class ReturnedOrderListCreateAPIView(generics.ListCreateAPIView):
     filter_backends = [
         DjangoFilterBackend
     ]
-    filterset_class = OrderFilter
+    filterset_class = ReturnedOrderFilter
 
     def get_queryset(self):
         query_page_size = int(self.request.query_params['page_size']) if 'page_size' in self.request.query_params else 0
