@@ -73,6 +73,8 @@ class RoleSerializer(serializers.ModelSerializer):
 
 
 class RestaurantSerializer(serializers.ModelSerializer):
+    igv_percent = serializers.DecimalField(default=0.18, min_value=0, max_value=0.99, max_digits=8, decimal_places=2)
+
     class Meta:
         model = Restaurant
         fields = ['id', 'name', 'address', 'ruc', 'picture', 'email', 'igv_percent', 'business_name', 'phone']

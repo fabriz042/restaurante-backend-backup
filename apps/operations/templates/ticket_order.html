@@ -54,6 +54,8 @@
             <p><b>RUC:</b> {{ order.restaurant.ruc }}</p>
             <p>{{order.restaurant.address}}</p>
             <p><b>Cel:</b> {{order.restaurant.phone}}</p>
+            <p><b>Mesa:</b> {{ order.table.name }}</p>
+            <p><b>Mesero:</b> {{ order.waiter.first_name| title }} {{ order.waiter.last_name| title }}</p>
             <h2>{{ order.payment_document|title }} - {{ order.payment_type.name }}</h2>
             {% endif %}
             {% if not ticket_type == ticket_types.KITCHEN %}
