@@ -570,8 +570,10 @@ class CloseOrderAPIView(generics.UpdateAPIView):
         order.save()
         order.table.state = Table.State.FREE
         order.table.save()
-        serie = Serie.objects.filter(payment_document=order.payment_document, code=order.serie).first()
+        serie = Serie.objects.filter(payment_document=order.payment_document, code=order.serie, is_active=True, restaurant=self.request.user.profile.restaurant).first()
+        print(serie)
         if serie:
+            print('+++++')
             Serie.objects.filter(id=serie.id, is_active=True).update(correlative=serie.correlative+1)
         return Response(status=200)
 

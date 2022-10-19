@@ -294,7 +294,7 @@ class Order(models.Model):
     )
     end_datetime = models.DateTimeField(
         null=True,
-        default=None,
+        default=None, blank=True,
         verbose_name='Hora de Fin'
     )
     waiter = models.ForeignKey(
