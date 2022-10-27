@@ -452,6 +452,35 @@ class OrderTicketAPIView(generics.RetrieveUpdateDestroyAPIView):
         return None
 
 
+class ReturnedOrderTicketAPIView(generics.RetrieveUpdateDestroyAPIView):
+    class TicketType:
+        IGV = 4
+        NO_IGV = 2
+        KITCHEN = 0
+
+    ticket_type = TicketType.IGV
+    queryset = ReturnedOrder.objects.filter(is_active=True)
+
+    def get(self, request, *args, **kwargs):
+        order = self.get_object()
+        html = render_to_string('ticket_order.html', {
+            'order': order,
+            'details': order.related_order.details.filter(is_active=True),
+            'ticket_type': self.ticket_type,
+            'ticket_types': ReturnedOrderTicketAPIView.TicketType()
+        })
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename=Comprobante_{}-{}.pdf'.format(
+            order.serie,
+            str(order.correlative)
+        )
+        result = BytesIO()
+        pdf = pisa.pisaDocument(BytesIO(html.encode("utf-8")), result)
+        if not pdf.err:
+            return HttpResponse(result.getvalue(), content_type='application/pdf')
+        return None
+
+
 class SerieListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = SerieSerializer
     permission_classes = [DjangoModelPermissionsWithRead]
