@@ -112,7 +112,7 @@ class OrderSunatSerializer(OrderSerializer):
         except Order.billorder.RelatedObjectDoesNotExist:
             data['bill_order'] = None
 
-        has_returned_order = ReturnedOrder.objects.filter(related_order_id=instance.id).first()
+        has_returned_order = ReturnedOrder.objects.filter(related_order_id=instance.id, is_active=True).first()
         data['has_bill_annulation_order'] = True if has_returned_order else False
         return data
 
