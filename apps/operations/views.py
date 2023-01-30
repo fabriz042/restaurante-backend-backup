@@ -600,9 +600,7 @@ class CloseOrderAPIView(generics.UpdateAPIView):
         order.table.state = Table.State.FREE
         order.table.save()
         serie = Serie.objects.filter(payment_document=order.payment_document, code=order.serie, is_active=True, restaurant=self.request.user.profile.restaurant).first()
-        print(serie)
         if serie:
-            print('+++++')
             Serie.objects.filter(id=serie.id, is_active=True).update(correlative=serie.correlative+1)
         return Response(status=200)
 
@@ -684,6 +682,9 @@ class ReturnedOrderListCreateAPIView(generics.ListCreateAPIView):
         )
         for detail in instance.related_order.details.all():
             make_movements_per_detail(detail, positive=True)
+        serie = Serie.objects.filter(payment_document=instance.payment_document, code=instance.serie, is_active=True, restaurant=self.request.user.profile.restaurant).first()
+        if serie:
+            Serie.objects.filter(id=serie.id, is_active=True).update(correlative=serie.correlative+1)
 
 
 class ReturnedOrderRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
