@@ -21,7 +21,7 @@
     </cbc:Note-->
     <cbc:DocumentCurrencyCode>{{ bill.order.currency.code| upper }}</cbc:DocumentCurrencyCode>
     <cac:Signature>
-        <cbc:ID>{{bill.bill_name}}</cbc:ID>
+        <cbc:ID>{{bill.order.restaurant.ruc}}</cbc:ID>
         <cac:SignatoryParty>
             <cac:PartyIdentification><cbc:ID>{{bill.order.restaurant.ruc}}</cbc:ID></cac:PartyIdentification>
             <cac:PartyName>
@@ -31,7 +31,7 @@
         <cac:DigitalSignatureAttachment>
             <cac:ExternalReference>
 
-                <cbc:URI>{{bill.bill_name}}</cbc:URI>
+                <cbc:URI>{{bill.order.restaurant.ruc}}</cbc:URI>
 
             </cac:ExternalReference>
         </cac:DigitalSignatureAttachment>

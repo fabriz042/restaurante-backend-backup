@@ -49,7 +49,7 @@ class Services:
 			WSU.Expires(expires_datetime.strftime("%Y-%m-%dT%H:%M:%SZ"))
 		]
 		timestamp_token.extend(timestamp_elements)
-		username_token = UsernameToken(username, password, timestamp_token=timestamp_token)
+		username_token = UsernameToken(username, password)
 		return Client(wsdl_url, wsse=username_token)
 
 	def send_bill(self, bill: BillOrder):

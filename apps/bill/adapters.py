@@ -18,7 +18,7 @@ class BillToXMLAdapter:
         template = get_template(self.template_name)
         content = template.render(self.get_context())
         content_signed = self.sign(content)
-        return etree.tostring(content_signed, pretty_print=True, xml_declaration=True)
+        return etree.tostring(content_signed, pretty_print=True, xml_declaration=True, encoding='UTF-8')
 
     def sign(self, content):
         private_key = self.settings.certificate_private_key.read()
@@ -29,14 +29,16 @@ class BillToXMLAdapter:
             method=signxml.methods.enveloped,
             signature_algorithm='rsa-sha1',
             digest_algorithm="sha1",
-            c14n_algorithm='http://www.w3.org/TR/2001/REC-xml-c14n-20010315#WithComments'
+            c14n_algorithm='http://www.w3.org/TR/2001/REC-xml-c14n-20010315'
         ).sign(
             root,
             key=private_key,
             cert=certificate
         )
+        print(etree.tostring(signed_root, pretty_print=True).decode())
         self.__move_sign__(root=signed_root)
         verified_data = signxml.XMLVerifier().verify(signed_root, x509_cert=certificate).signed_xml
+        print('pass')
         return signed_root
 
     @staticmethod
