@@ -97,7 +97,6 @@ class BillOrderServiceAPIView(generics.ListCreateAPIView):
 
     @staticmethod
     def validate(bill: Bill):
-        print(bill)
         if not hasattr(bill.order.restaurant, 'billing_settings'):
             raise ValidationError({
                 'detail': 'No se ha configurado la configuración de facturación'

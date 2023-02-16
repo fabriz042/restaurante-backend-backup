@@ -35,10 +35,8 @@ class BillToXMLAdapter:
             key=private_key,
             cert=certificate
         )
-        print(etree.tostring(signed_root, pretty_print=True).decode())
         self.__move_sign__(root=signed_root)
         verified_data = signxml.XMLVerifier().verify(signed_root, x509_cert=certificate).signed_xml
-        print('pass')
         return signed_root
 
     @staticmethod
