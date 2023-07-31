@@ -29,22 +29,22 @@ class Client(models.Model):
     )
     document = models.CharField(
         max_length=25,
-        null=True,
-        default=None,
+        null=True, blank=True,
+        default='',
         verbose_name='Documento'
     )
     phone = models.CharField(
         max_length=20,
-        blank=False,
+        blank=True,
         null=True,
-        default=None,
+        default='',
         verbose_name='Telefóno'
     )
     address = models.CharField(
         max_length=250,
-        blank=False,
+        blank=True,
         null=True,
-        default=None,
+        default='',
         verbose_name='Dirección'
     )
     is_active = models.BooleanField(
