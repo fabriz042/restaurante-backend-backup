@@ -69,6 +69,11 @@ class BillingSettingsCertificateAPIView(generics.UpdateAPIView):
             })
 
 
+class BillRetrieveAPIView(generics.RetrieveAPIView):
+    serializer_class = BillOrderSerializer
+    queryset = BillOrder.objects.all()
+
+
 class BillOrderServiceAPIView(generics.ListCreateAPIView):
     permission_classes = [DjangoModelPermissionsWithRead]
     queryset = BillOrder.objects.all()
