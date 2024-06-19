@@ -597,8 +597,8 @@ class CloseOrderAPIView(generics.UpdateAPIView):
         order = self.get_object()
         serie = Serie.objects.filter(payment_document=order.payment_document, code=order.serie, is_active=True, restaurant=self.request.user.profile.restaurant).first()
         if serie:
-            correlative = serie.correlative+1
-            Serie.objects.filter(id=serie.id, is_active=True).update(correlative=correlative)
+            correlative = serie.correlative
+            Serie.objects.filter(id=serie.id, is_active=True).update(correlative=correlative+1)
             order.correlative = correlative
         order.end_datetime = datetime.datetime.now(tz=pytz.timezone(settings.TIME_ZONE))
         order.save()
