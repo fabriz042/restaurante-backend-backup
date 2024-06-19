@@ -1,5 +1,7 @@
 import datetime
 from io import BytesIO
+
+from django.db import transaction
 from django_filters import rest_framework as filters
 import pytz
 from django.conf import settings
@@ -594,16 +596,18 @@ class CloseOrderAPIView(generics.UpdateAPIView):
         )
 
     def update(self, request, *args, **kwargs):
-        order = self.get_object()
-        serie = Serie.objects.filter(payment_document=order.payment_document, code=order.serie, is_active=True, restaurant=self.request.user.profile.restaurant).first()
-        if serie:
-            correlative = serie.correlative
-            Serie.objects.filter(id=serie.id, is_active=True).update(correlative=correlative+1)
-            order.correlative = correlative
-        order.end_datetime = datetime.datetime.now(tz=pytz.timezone(settings.TIME_ZONE))
-        order.save()
-        order.table.state = Table.State.FREE
-        order.table.save()
+        with transaction.atomic():
+            order = self.get_object()
+            serie = Serie.objects.select_for_update().filter(payment_document=order.payment_document, code=order.serie, is_active=True, restaurant=self.request.user.profile.restaurant).first()
+            if serie:
+                correlative = serie.correlative
+                order.correlative = correlative
+                serie.correlative += 1
+                serie.save()
+            order.end_datetime = datetime.datetime.now(tz=pytz.timezone(settings.TIME_ZONE))
+            order.save()
+            order.table.state = Table.State.FREE
+            order.table.save()
         return Response(status=200)
 
 
