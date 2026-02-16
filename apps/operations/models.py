@@ -140,7 +140,7 @@ class Operation(models.Model):
         verbose_name='Fecha'
     )
     igv = models.DecimalField(
-        decimal_places=2,
+        decimal_places=3,
         max_digits=8,
         null=False,
         default=0,
@@ -352,7 +352,7 @@ class Order(models.Model):
     )
     igv_percent = models.DecimalField(
         max_digits=8,
-        decimal_places=2,
+        decimal_places=3,
         default=0.18,
         verbose_name='% IGV',
         blank=True
@@ -542,15 +542,15 @@ class ReturnedOrder(models.Model):
     @property
     def total(self):
         return self.related_order.total
-    
+
     @property
     def client(self):
         return self.related_order.client
-    
+
     @property
     def payment_type(self):
         return self.related_order.payment_type
-    
+
     @property
     def start_datetime(self):
         return self.datetime
