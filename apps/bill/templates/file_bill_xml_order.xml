@@ -125,7 +125,7 @@
                     <cbc:Percent>{{ bill.order.igv_percent_formatted | stringformat:".2f"}}</cbc:Percent>
                     <cbc:TaxExemptionReasonCode>10</cbc:TaxExemptionReasonCode>
                     <cac:TaxScheme>
-                        <cbc:ID>1000</cbc:ID>
+                        <cbc:ID schemeID="UN/ECE 5153" schemeAgencyID="6">1000</cbc:ID>
                         <cbc:Name>IGV</cbc:Name>
                         <cbc:TaxTypeCode>VAT</cbc:TaxTypeCode>
                     </cac:TaxScheme>
