@@ -88,6 +88,7 @@
             <cbc:TaxAmount currencyID="{{ bill.order.currency.code| upper }}">{{ bill.order.igv | stringformat:".2f" }}</cbc:TaxAmount>
             <cac:TaxCategory>
                 <cbc:ID schemeID="UN/ECE 5305" schemeName="Tax Category Identifier" schemeAgencyName="United Nations Economic Commission for Europe">S</cbc:ID>
+                <cbc:Percent>{{ bill.order.igv_percent_formatted | stringformat:".2f"}}</cbc:Percent>
                 <cac:TaxScheme>
                     <cbc:ID schemeID="UN/ECE 5153" schemeAgencyID="6">1000</cbc:ID>
                     <cbc:Name>IGV</cbc:Name>
