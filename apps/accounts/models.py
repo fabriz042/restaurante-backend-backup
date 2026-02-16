@@ -36,7 +36,7 @@ class Restaurant(models.Model):
     )
     igv_percent = models.DecimalField(
         max_digits=8,
-        decimal_places=2,
+        decimal_places=3,
         default=0.18,
         verbose_name='% IGV',
         blank=True
