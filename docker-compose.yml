@@ -1,0 +1,26 @@
+services:
+  restaurante_db:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: restaurant_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  restaurante_backend:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - restaurante_db
+    env_file:
+      - .env
+
+volumes:
+  pgdata:
