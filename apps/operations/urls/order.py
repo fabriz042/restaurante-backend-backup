@@ -2,7 +2,7 @@ from django.urls import path, include
 
 from apps.operations.views import OrderListCreateAPIView, OrderRetrieveUpdateDestroyAPIView, OpenedOrderListAPIView, \
     OrderExtendedListAPIView, OrderTicketAPIView, OrderClosedListCreateAPIView, OrderTicketNoIGVAPIView, \
-    OrderTicketKitchenAPIView, AdditionalTicketAPIView, CloseOrderAPIView, CloseAllOrderAPIView, ReturnedOrderListCreateAPIView, ReturnedOrderRetrieveUpdateDestroyAPIView, ReturnedOrderTicketAPIView
+    OrderTicketKitchenAPIView, AdditionalTicketAPIView, CloseOrderAPIView, CloseAllOrderAPIView, ReturnedOrderListCreateAPIView, ReturnedOrderRetrieveUpdateDestroyAPIView, ReturnedOrderTicketAPIView, PreCheckTicketAPIView
 
 urlpatterns = [
     path('', OrderListCreateAPIView.as_view()),
@@ -15,6 +15,7 @@ urlpatterns = [
     path('ticket/no_igv/<pk>', OrderTicketNoIGVAPIView.as_view()),
     path('ticket/kitchen/<pk>', OrderTicketKitchenAPIView.as_view()),
     path('ticket/add/<pk>', AdditionalTicketAPIView.as_view()),
+    path('ticket/pre-check/<pk>', PreCheckTicketAPIView.as_view()),
     path('closed/', OrderClosedListCreateAPIView.as_view()),
     path('returned/', ReturnedOrderListCreateAPIView.as_view()),
     path('returned/<pk>', ReturnedOrderRetrieveUpdateDestroyAPIView.as_view()),
