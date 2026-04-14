@@ -80,6 +80,32 @@ class OrderSerializer(serializers.ModelSerializer):
             'is_active'
         ]
         read_only_fields = ('is_active', 'id')
+        
+    def validate(self, attrs):
+        instance = getattr(self, 'instance', None)
+
+        if instance:
+            old_doc = instance.payment_document
+            new_doc = attrs.get('payment_document', old_doc)
+
+            if old_doc and new_doc:
+                old_name = old_doc.name.upper()
+                new_name = new_doc.name.upper()
+
+                if old_name == "FACTURA" and new_name != "FACTURA":
+                    raise serializers.ValidationError({"payment_document": "Una FACTURA no puede modificarse"})
+                
+                if old_name == "BOLETA DE VENTA" and new_name not in ["BOLETA DE VENTA", "FACTURA"]:
+                    raise serializers.ValidationError({"payment_document": "Una BOLETA solo puede cambiar a FACTURA"})
+                
+                if old_name == "NOTA DE PEDIDO" and new_name not in [
+                    "NOTA DE PEDIDO",
+                    "BOLETA DE VENTA",
+                    "FACTURA"
+                ]:
+                    raise serializers.ValidationError({"payment_document": "Cambio de comprobante no permitido"})
+                
+        return attrs
 
     def to_representation(self, instance):
         data = super(OrderSerializer, self).to_representation(instance)

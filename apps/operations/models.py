@@ -357,6 +357,10 @@ class Order(models.Model):
         verbose_name='% IGV',
         blank=True
     )
+    is_delivery = models.BooleanField(
+        default=False,
+        verbose_name="Delibery"
+    )
 
     class Meta:
         verbose_name = 'Pedido'

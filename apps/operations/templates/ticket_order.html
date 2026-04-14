@@ -76,6 +76,7 @@
                 <p><b>Salón:</b> {{ order.table.hall.name }}</p>
                 <p><b>Mesa:</b> {{ order.table.name }}</p>
                 <p><b>Mesero:</b> {{ order.waiter.first_name| title }} {{ order.waiter.last_name| title }}</p>
+                <p><b>Delivery:</b> {{ % if order.is_delivery %}SI{% else %}NO{% endif %}}</p>
                 {% endif %}
             </div>
             <br>
