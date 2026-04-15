@@ -361,6 +361,12 @@ class Order(models.Model):
         default=False,
         verbose_name="Delibery"
     )
+    comment = models.TextField(
+        max_length=500,
+        null=True,
+        blank=True,
+        verbose_name='Comentario'
+    )
 
     class Meta:
         verbose_name = 'Pedido'
