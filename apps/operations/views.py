@@ -572,7 +572,7 @@ class OrderTicketKitchenAPIView(OrderTicketAPIView):
 
 
 class AdditionalTicketAPIView(generics.UpdateAPIView):
-    template_name = 'ticket_order.html'
+    template_name = 'ticket_additional.html'
     ticket_type = OrderTicketAPIView.TicketType.KITCHEN
 
     def get_queryset(self):

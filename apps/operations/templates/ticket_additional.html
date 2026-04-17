@@ -1,10 +1,168 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="utf-8">
+        <title>Reporte PDF</title>
+        <style>
+        @page {
+            size: 8cm 20cm ;
+            margin: 0.5cm 0.5cm 0.5cm 0.5cm;
+        }
+        p, h1, h2, td {
+            {% if not ticket_type == ticket_types.KITCHEN %}
+            line-height: 15px;
+            {% else %}
+            line-height: 25px;
+            font-size: 20px;
+            {% endif %}
+            padding: 0px;
+            margin: 0px;
+        }
+        table td {
+            padding-top: 3px;
+        }
+        .thead {
+            border-bottom-color: black;
+            border-bottom-style: solid;
+            border-bottom-width: 1px;
+            border-top-color: black;
+            border-top-style: solid;
+            border-top-width: 1px;
+        }
+         .tfooter {
+            border-top-color: black;
+            border-top-style: solid;
+            border-top-width: 1px;
+        }
+        .align {
+            text-align: left;
+        }
+        .image {
+             height: 64px;
+             width: auto;
+        }
+        </style>
+    </head>
+    <body>
+    <main class="container">
+        <center>
+            {% if not ticket_type == ticket_types.KITCHEN %}
+            <div>
+            <img class="image" src="{{ order.restaurant.picture.path }}" >
+            </div>
+            <h1 style="padding-top:8px">{{ order.restaurant.name }}</h1>
+            <p><b>RUC:</b> {{ order.restaurant.ruc }}</p>
+            <p>{{order.restaurant.address}}</p>
+            <p><b>Cel:</b> {{order.restaurant.phone}}</p>
+            <p><b>Mesero:</b> {{ order.waiter.first_name| title }} {{ order.waiter.last_name| title }}</p>
+            <p><b>Mesa:</b> {{ order.table.name }}</p>
+            <h2>{{ order.payment_document|title }} - {{ order.payment_type.name }}</h2>
+            {% endif %}
+            {% if not ticket_type == ticket_types.KITCHEN %}
+            <p>{{ order.serie }}-{{ order.correlative|stringformat:"08d" }}</p>
+            {% else %}
+            <p>Pedido N° {{ order.id|stringformat:"04d" }}</p>
+            <p>{% now "TIME_FORMAT" %}</p>
+            {% endif %}
+            <p style="line-height: 0px;"></p>
+            <div class="align">
+                {% if not ticket_type == ticket_types.KITCHEN %}
+                <p><b>Cliente:</b> {{ order.client.name }}</p>
+                <p><b>Dirección:</b> {{ order.client.address }}</p>
+                <p><b>RUC/DNI:</b> {{ order.client.document }}</p>
+                <p><b>Fech. Emisión:</b> {{ order.start_datetime|date:"d/m/Y" }}</p>
+                <p><b>Venta:</b> {{ order.payment_type.name| title }}</p>
+                {% else %}
+                <p><b>Salón:</b> {{ order.table.hall.name }}</p>
+                <p><b>Mesa:</b> {{ order.table.name }}</p>
+                <p><b>Mesero:</b> {{ order.waiter.first_name| title }} {{ order.waiter.last_name| title }}</p>
+                <p><b>Delivery:</b> {% if order.is_delivery %}SI{% else %}NO{% endif %}</p>
+                <p><b>Comentario:</b> {{ order.comment|default:"- -" }}</p>
+                <div style="text-align:center; margin-top:12px;">
+                    <span style="font-size:22px; font-weight:bold;">
+                        ADICIONAL
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+            <br>
+            <table>
+                <thead>
+                <tr class="thead">
+                    <td>Item</td>
+                    {% if ticket_type == ticket_types.IGV %}
+                    <td>P. Neto</td>
+                    <td>IGV</td>
+                    {% endif %}
+                    {% if not ticket_type == ticket_types.KITCHEN %}
+                    <td>P. Unit</td>
+                    {% endif %}
+                    <td>Cant</td>
+                    {% if not ticket_type == ticket_types.KITCHEN %}
+                    <td>P. Total</td>
+                    {% endif %}
+                </tr>
+                </thead>
+                <tbody>
+                {% for detail in details %}
+                {% if ticket_type == ticket_types.KITCHEN and detail.menu_item.is_recipe or not ticket_type == ticket_types.KITCHEN%}
+                <tr>
+                    {% if not ticket_type == ticket_types.KITCHEN %}
+                    <td>{{ detail.menu_item.menu_item_name }}</td>
+                    {% else %}
+                    <td><b>{{ detail.menu_item.menu_item_name }}</b></td>
+                    {% endif %}
+                    {% if ticket_type == ticket_types.IGV %}
+                    <td>{{ detail.prize_net|floatformat:2 }}</td>
+                    <td>{{ detail.igv|floatformat:2 }}</td>
+                    {% endif %}
+                    {% if not ticket_type == ticket_types.KITCHEN %}
+                    <td>{{ detail.unit_price|floatformat:2 }}</td>
+                    {% endif %}
+                    {% if not ticket_type == ticket_types.KITCHEN %}
+                    <td>{{ detail.quantity  }}</td>
+                    {% else %}
+                    <td><b>{{ detail.quantity  }}</b></td>
+                    {% endif %}
+                    {% if not ticket_type == ticket_types.KITCHEN %}
+                    <td>{{ detail.sub_total|floatformat:2 }}</td>
+                    {% endif %}
+                </tr>
+                {% endif %}
+                {% endfor %}
 
-</body>
+                {% if ticket_type == ticket_types.IGV %}
+                <tr class="tfooter">
+                    <td></td>
+                    <td colspan="{{ ticket_type }}"><b>SUB TOTAL</b></td>
+                    <td>{{ order.sub_total|floatformat:2  }}</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td colspan="{{ ticket_type }}"><b>IGV</b></td>
+                    <td>{{ order.igv|floatformat:2  }}</td>
+                </tr>
+                {% endif %}
+                {% if not ticket_type == ticket_types.KITCHEN %}
+                <tr>
+                    <td class="tfooter"></td>
+                    <td colspan="{{ ticket_type }}" class="tfooter"><b>TOTAL</b></td>
+                    <td  class="tfooter">{{ order.total|floatformat:2  }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="2" class="tfooter"></td>
+                </tr>
+                {% endif %}
+                </tbody>
+            </table>
+            <br>
+            {% if not ticket_type == ticket_types.KITCHEN %}
+            <p>SON {{ order.total_as_letters|upper }} {{ order.currency.name|upper }}</p>
+
+            <small>NO SE ACEPTAN CAMBIOS NI DEVOLUCIONES</small>
+            {% endif %}
+        </center>
+    </main>
+    </body>
 </html>
