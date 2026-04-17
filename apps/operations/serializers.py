@@ -77,6 +77,8 @@ class OrderSerializer(serializers.ModelSerializer):
             'payment_document',
             'client',
             'igv_percent',
+            'is_delivery',
+            'comment',
             'is_active'
         ]
         read_only_fields = ('is_active', 'id')
