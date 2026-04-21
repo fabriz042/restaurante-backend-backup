@@ -25,6 +25,10 @@ from apps.warehouse.serializers import WarehouseMovementSerializer
 from restaurant.permissions import DjangoModelPermissionsWithRead
 from shared.pagination import CustomPagination
 
+from rest_framework.views import APIView
+from django.http import HttpResponse
+from apps.operations.models import OrderDetail
+import csv
 
 class PaymentTypeListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = PaymentTypeSerializer
@@ -562,6 +566,76 @@ class OrderClosedListCreateAPIView(generics.ListCreateAPIView):
             end_datetime__isnull=False
         ).order_by('-id')
 
+class ReporteProductosExcelAPIView(APIView):
+
+    def get(self, request):
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+
+        detalles = OrderDetail.objects.filter(
+            header__end_datetime__isnull=False,
+            header__is_active=True,
+            is_active=True
+        )
+
+        if start_date and end_date:
+            detalles = detalles.filter(
+                header__start_datetime__date__gte=start_date,
+                header__start_datetime__date__lte=end_date
+            )
+
+        # 🔥 AGRUPACIÓN REAL POR PRODUCTO
+        data = {}
+
+        for d in detalles:
+
+            if hasattr(d.menu_item, 'product') and d.menu_item.product:
+                nombre = d.menu_item.product.name
+            else:
+                nombre = d.menu_item.recipe.name
+
+            precio = float(d.unit_price)
+            cantidad = float(d.quantity)
+
+            if nombre not in data:
+                data[nombre] = {
+                    "cantidad": 0,
+                    "precio": precio
+                }
+
+            data[nombre]["cantidad"] += cantidad
+
+        # 🚀 EXPORT EXCEL
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename=reporte_productos.csv'
+
+        writer = csv.writer(response)
+
+        # SOLO LO QUE QUIERES
+        writer.writerow([
+            "Producto",
+            "Cantidad",
+            "Precio Unitario",
+            "Subtotal"
+        ])
+
+        total = 0
+
+        for nombre, val in data.items():
+            subtotal = val["cantidad"] * val["precio"]
+            total += subtotal
+
+            writer.writerow([
+                nombre,
+                val["cantidad"],
+                val["precio"],
+                subtotal
+            ])
+
+        writer.writerow([])
+        writer.writerow(["", "", "TOTAL", total])
+
+        return response
 
 class OrderTicketNoIGVAPIView(OrderTicketAPIView):
     ticket_type = OrderTicketAPIView.TicketType.NO_IGV
