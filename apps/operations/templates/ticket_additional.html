@@ -77,7 +77,6 @@
                 <p><b>Mesa:</b> {{ order.table.name }}</p>
                 <p><b>Mesero:</b> {{ order.waiter.first_name| title }} {{ order.waiter.last_name| title }}</p>
                 <p><b>Delivery:</b> {% if order.is_delivery %}SI{% else %}NO{% endif %}</p>
-                <p><b>Comentario:</b> {{ order.comment|default:"- -" }}</p>
                 <div style="text-align:center; margin-top:12px;">
                     <span style="font-size:22px; font-weight:bold;">
                         ADICIONAL
